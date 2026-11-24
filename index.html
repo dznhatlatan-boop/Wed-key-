@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TÂN HUB // KEY SYSTEM</title>
+  <title>AK HUB // KEY SYSTEM</title>
   <style>
     * { box-sizing: border-box; font-family: Arial, sans-serif; }
     body {
@@ -43,17 +43,17 @@
 </head>
 <body>
   <div class="box">
-    <h1>ak hud // KEY SYSTEM</h1>
-    <p>Key riêng theo UserId • Bắt đầu đếm khi bấm Lấy Key</p>
+    <h1>AK HUB // KEY SYSTEM</h1>
+    <p>Key riêng theo UserId • Chu kỳ 5 giờ • Bắt đầu đếm khi bấm Lấy Key</p>
 
-    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: vd hupbera23)" />
+    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" />
 
     <div class="info-bar">
       <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div>
       <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
     </div>
 
-    <div id="keyOut" class="key-box">vd 23456789-</div>
+    <div id="keyOut" class="key-box">----------</div>
 
     <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button>
     <button id="renewBtn" class="btn-renew" onclick="giaHan30s()">Gia Hạn (Đếm Ngược 30s)</button>
@@ -63,17 +63,29 @@
   </div>
 
   <script>
-    const SECRET_SALT = 7919; // Khớp _SecretSalt trong trai.lua
+    const SECRET_SALT = 7919;
     const KEY_TTL_MS = 5 * 60 * 60 * 1000;
     const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000;
+    const RENEW_WAIT_SEC = 30;
 
-    let hasTakenKey = false; // Chỉ bật true sau khi bấm nút Lấy Key
+    const OWNER_ACCOUNTS = ["hupbera23"];
+
+    let hasTakenKey = false;
+    let isOwnerMode = false;
     let expireAtMs = 0;
     let currentCycleIdx = null;
     let renewInterval = null;
 
+    function getRawInput() {
+      return document.getElementById("uidInput").value.trim();
+    }
+
     function getCleanUid() {
-      return document.getElementById("uidInput").value.trim().replace(/\D/g, "");
+      return getRawInput().replace(/\D/g, "");
+    }
+
+    function isOwnerInput(raw) {
+      return OWNER_ACCOUNTS.includes(String(raw || "").toLowerCase());
     }
 
     function getCycleFromTimestamp(ms) {
@@ -99,6 +111,7 @@
 
     function resetTrangThaiChuaLayKey() {
       hasTakenKey = false;
+      isOwnerMode = false;
       expireAtMs = 0;
       currentCycleIdx = null;
       document.getElementById("cycleLabel").textContent = "Chưa lấy";
@@ -106,13 +119,36 @@
       document.getElementById("keyCountdown").textContent = "--:--:--";
     }
 
+    function applyOwnerState(raw) {
+      hasTakenKey = false;
+      isOwnerMode = true;
+      expireAtMs = 0;
+      currentCycleIdx = "OWNER";
+      document.getElementById("cycleLabel").textContent = "CHỦ HUB (VÔ HẠN)";
+      document.getElementById("keyCountdown").textContent = "VÔ HẠN";
+      document.getElementById("keyOut").textContent = "OWNER-UNLIMITED";
+      document.getElementById("msg").textContent = `Chủ Hub (${raw}) — Vào game tự mở vô hạn.`;
+    }
+
     function layKeyMoiTuLucNay() {
-      const uid = getCleanUid();
-      if (!uid) {
-        document.getElementById("msg").textContent = "Hãy nhập đúng tên acc Roblox trước!";
+      const raw = getRawInput();
+      if (!raw) {
+        document.getElementById("msg").textContent = "Hãy nhập UserId Roblox trước!";
         return;
       }
 
+      if (isOwnerInput(raw)) {
+        applyOwnerState(raw);
+        return;
+      }
+
+      const uid = getCleanUid();
+      if (!uid) {
+        document.getElementById("msg").textContent = "UserId chỉ gồm chữ số (VD: 123456789)!";
+        return;
+      }
+
+      isOwnerMode = false;
       const now = Date.now();
       currentCycleIdx = getCycleFromTimestamp(now);
       expireAtMs = now + KEY_TTL_MS;
@@ -122,13 +158,24 @@
       document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
       document.getElementById("keyOut").textContent = key;
       document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now());
-      document.getElementById("msg").textContent = "Đã lấy key! Bắt đầu đếm ngược từ bây giờ.";
+      document.getElementById("msg").textContent = "Đã lấy key! Có hiệu lực 5 giờ kể từ bây giờ.";
     }
 
     function giaHan30s() {
+      const raw = getRawInput();
+      if (!raw) {
+        document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
+        return;
+      }
+
+      if (isOwnerInput(raw) || isOwnerMode) {
+        applyOwnerState(raw);
+        return;
+      }
+
       const uid = getCleanUid();
       if (!uid) {
-        document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
+        document.getElementById("msg").textContent = "UserId không hợp lệ!";
         return;
       }
       if (!hasTakenKey || !expireAtMs) {
@@ -137,12 +184,11 @@
       }
       if (renewInterval) return;
 
-      let secLeft = 30
-        ;
+      let secLeft = RENEW_WAIT_SEC;
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
       btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-      document.getElementById("msg").textContent = "Đang chờ 30 giây để gia hạn thêm 4 giờ...";
+      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 5 giờ...`;
 
       renewInterval = setInterval(() => {
         secLeft--;
@@ -152,7 +198,7 @@
           clearInterval(renewInterval);
           renewInterval = null;
           btn.disabled = false;
-          btn.textContent = "Gia Hạn (Đếm Ngược 30s)";
+          btn.textContent = `Gia Hạn (Đếm Ngược ${RENEW_WAIT_SEC}s)`;
 
           const baseTime = Math.max(Date.now(), expireAtMs);
           currentCycleIdx = currentCycleIdx + 1;
@@ -162,15 +208,15 @@
           const newKey = tinhKey(uid, currentCycleIdx);
           document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
           document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 4h.";
+          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 5h.";
         }
       }, 1000);
     }
 
     function copyKey() {
       const k = document.getElementById("keyOut").textContent;
-      if (!hasTakenKey || !k || k === "----------") {
-        document.getElementById("msg").textContent = "Bấm Lấy Key trước đã!";
+      if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") {
+        document.getElementById("msg").textContent = "Bấm Lấy Key theo UserId trước đã!";
         return;
       }
       navigator.clipboard.writeText(k).then(() => {
@@ -181,12 +227,21 @@
     }
 
     document.getElementById("uidInput").addEventListener("input", () => {
+      const raw = getRawInput();
+      if (isOwnerInput(raw)) {
+        applyOwnerState(raw);
+        return;
+      }
       resetTrangThaiChuaLayKey();
       document.getElementById("msg").textContent = "Bấm Lấy Key để bắt đầu đếm thời gian.";
     });
 
     setInterval(() => {
       const el = document.getElementById("keyCountdown");
+      if (isOwnerMode) {
+        el.textContent = "VÔ HẠN";
+        return;
+      }
       if (!hasTakenKey || !expireAtMs) {
         el.textContent = "--:--:--";
         return;
