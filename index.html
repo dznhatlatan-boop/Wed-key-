@@ -109,7 +109,7 @@
     function layKeyMoiTuLucNay() {
       const uid = getCleanUid();
       if (!uid) {
-        document.getElementById("msg").textContent = "Hãy nhập đúng UserId Roblox trước!";
+        document.getElementById("msg").textContent = "Hãy nhập đúng tên acc Roblox trước!";
         return;
       }
 
@@ -125,7 +125,7 @@
       document.getElementById("msg").textContent = "Đã lấy key! Bắt đầu đếm ngược từ bây giờ.";
     }
 
-    function giaHan60s() {
+    function giaHan30s() {
       const uid = getCleanUid();
       if (!uid) {
         document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
@@ -137,7 +137,8 @@
       }
       if (renewInterval) return;
 
-      let secLeft = 60;
+      let secLeft = 30
+        ;
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
       btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
