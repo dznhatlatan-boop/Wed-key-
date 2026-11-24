@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,34 +16,36 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #0b1120;
+      background: radial-gradient(circle at top, #1d2b64, #090d16 70%);
       color: #f8fafc;
       padding: 20px;
     }
 
     .box {
       width: 100%;
-      max-width: 390px;
-      background: #1a2232;
-      border: 1px solid #2b364b;
-      border-radius: 16px;
+      max-width: 395px;
+      background: linear-gradient(160deg, #1b263b, #111827);
+      border: 2px solid #38bdf8;
+      border-radius: 18px;
       padding: 24px 20px;
       text-align: center;
-      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 16px 40px rgba(0, 195, 255, 0.25);
     }
 
     h1 {
       margin: 0 0 6px;
-      font-size: 20px;
-      font-weight: 700;
-      color: #38bdf8;
-      letter-spacing: 0.5px;
+      font-size: 21px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #38bdf8, #facc15, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.6px;
     }
 
     p {
       margin: 0 0 16px;
       font-size: 12px;
-      color: #cbd5e1;
+      color: #bae6fd;
       line-height: 1.4;
     }
 
@@ -51,37 +53,34 @@
       width: 100%;
       padding: 12px 14px;
       border-radius: 10px;
-      border: 1px solid #334155;
-      background: #0d1424;
-      color: #f8fafc;
+      border: 1.5px solid #38bdf8;
+      background: #091120;
+      color: #fef08a;
       font-size: 13px;
+      font-weight: 700;
       margin-bottom: 12px;
       text-align: center;
       outline: none;
     }
 
-    input:focus {
-      border-color: #38bdf8;
-    }
-
     .info-bar {
-      background: #0d1424;
-      border: 1px solid #263248;
+      background: #091120;
+      border: 1px solid #334155;
       border-radius: 10px;
       padding: 11px 12px;
       font-size: 12px;
-      color: #93c5fd;
+      color: #7dd3fc;
       margin-bottom: 12px;
-      line-height: 1.55;
+      line-height: 1.6;
     }
 
     .key-box {
-      background: #0d1424;
-      border: 1px dashed #475569;
-      border-radius: 10px;
+      background: #091120;
+      border: 2px dashed #4ade80;
+      border-radius: 12px;
       padding: 15px 12px;
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 2px;
       color: #4ade80;
       margin-bottom: 14px;
@@ -94,19 +93,19 @@
       border: none;
       border-radius: 10px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       margin-bottom: 10px;
     }
 
     .btn-get {
-      background: #2f6df6;
+      background: linear-gradient(90deg, #2563eb, #06b6d4);
       color: #ffffff;
     }
 
     .btn-renew {
-      background: #e08a00;
-      color: #ffffff;
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+      color: #1e1204;
     }
 
     .btn-renew:disabled {
@@ -116,36 +115,37 @@
     }
 
     .btn-copy {
-      background: #1ea853;
+      background: linear-gradient(90deg, #16a34a, #22c55e);
       color: #ffffff;
       margin-bottom: 6px;
     }
 
     .msg {
       font-size: 12px;
-      color: #94a3b8;
+      color: #fde047;
       min-height: 18px;
       margin-top: 6px;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
   <div class="box">
-    <h1>AK HUB // KEY SYSTEM</h1>
-    <p>UserId Key • 5h Cycle • Starts on Get Key</p>
+    <h1>⚡ AK HUB // KEY SYSTEM ✨</h1>
+    <p>🔑 Key theo UserId • ⏳ Chu kỳ 5h • 🚀 Đếm ngay khi lấy</p>
 
-    <input id="uidInput" type="text" placeholder="Enter Roblox UserId (e.g. 123456789)" />
+    <input id="uidInput" type="text" placeholder="🆔 Nhập UserId Roblox (VD: 123456789)" />
 
     <div class="info-bar">
-      <div>Cycle: <strong id="cycleLabel">None</strong></div>
-      <div>Time Left: <strong id="keyCountdown">--:--:--</strong></div>
+      <div>🔄 Chu kỳ: <strong id="cycleLabel">Chưa lấy</strong></div>
+      <div>⏱️ Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
     </div>
 
     <div id="keyOut" class="key-box">----------</div>
 
-    <button class="btn-get" onclick="getKeyNow()">Get Key</button>
-    <button id="renewBtn" class="btn-renew" onclick="renewKey30s()">Renew (30s)</button>
-    <button class="btn-copy" onclick="copyKey()">Copy Key</button>
+    <button class="btn-get" onclick="getKeyNow()">⚡ Lấy Key Ngay</button>
+    <button id="renewBtn" class="btn-renew" onclick="renewKey30s()">🔥 Gia Hạn Thêm 5h (30s)</button>
+    <button class="btn-copy" onclick="copyKey()">📋 Sao Chép Key</button>
 
     <div id="msg" class="msg"></div>
   </div>
@@ -201,7 +201,7 @@
       isOwnerMode = false;
       expireAtMs = 0;
       currentCycleIdx = null;
-      document.getElementById("cycleLabel").textContent = "None";
+      document.getElementById("cycleLabel").textContent = "Chưa lấy";
       document.getElementById("keyOut").textContent = "----------";
       document.getElementById("keyCountdown").textContent = "--:--:--";
     }
@@ -211,16 +211,16 @@
       isOwnerMode = true;
       expireAtMs = 0;
       currentCycleIdx = "OWNER";
-      document.getElementById("cycleLabel").textContent = "OWNER VN";
-      document.getElementById("keyCountdown").textContent = "UNLIMITED";
+      document.getElementById("cycleLabel").textContent = "👑 OWNER VN";
+      document.getElementById("keyCountdown").textContent = "♾️ VÔ HẠN";
       document.getElementById("keyOut").textContent = "OWNER-UNLIMITED";
-      document.getElementById("msg").textContent = `OWNER VN (${raw}) - Unlimited access in-game.`;
+      document.getElementById("msg").textContent = `👑 OWNER VN (${raw}) — Mở khóa vô hạn trong game!`;
     }
 
     function getKeyNow() {
       const raw = getRawInput();
       if (!raw) {
-        document.getElementById("msg").textContent = "Enter Roblox UserId first.";
+        document.getElementById("msg").textContent = "⚠️ Nhập UserId Roblox trước đã!";
         return;
       }
 
@@ -231,7 +231,7 @@
 
       const uid = getCleanUid();
       if (!uid) {
-        document.getElementById("msg").textContent = "UserId must be numbers only (e.g. 123456789).";
+        document.getElementById("msg").textContent = "❌ UserId chỉ gồm chữ số (VD: 123456789)!";
         return;
       }
 
@@ -245,13 +245,13 @@
       document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
       document.getElementById("keyOut").textContent = key;
       document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now());
-      document.getElementById("msg").textContent = "Key generated. Valid for 5 hours.";
+      document.getElementById("msg").textContent = "✅ Đã tạo key! Có hiệu lực 5 giờ.";
     }
 
     function renewKey30s() {
       const raw = getRawInput();
       if (!raw) {
-        document.getElementById("msg").textContent = "Enter UserId before renewing.";
+        document.getElementById("msg").textContent = "⚠️ Nhập UserId trước khi gia hạn!";
         return;
       }
 
@@ -262,12 +262,12 @@
 
       const uid = getCleanUid();
       if (!uid) {
-        document.getElementById("msg").textContent = "Invalid UserId.";
+        document.getElementById("msg").textContent = "❌ UserId không hợp lệ!";
         return;
       }
 
       if (!hasTakenKey || !expireAtMs) {
-        document.getElementById("msg").textContent = "Click Get Key before renewing.";
+        document.getElementById("msg").textContent = "⚠️ Bấm Lấy Key trước rồi mới gia hạn!";
         return;
       }
 
@@ -276,18 +276,18 @@
       let secLeft = RENEW_WAIT_SEC;
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
-      btn.textContent = `Renewing: ${secLeft}s...`;
-      document.getElementById("msg").textContent = `Waiting ${RENEW_WAIT_SEC}s to add 5 hours...`;
+      btn.textContent = `⏳ Đang gia hạn: ${secLeft}s...`;
+      document.getElementById("msg").textContent = `⏳ Đợi ${RENEW_WAIT_SEC}s để cộng thêm 5 giờ...`;
 
       renewInterval = setInterval(() => {
         secLeft--;
         if (secLeft > 0) {
-          btn.textContent = `Renewing: ${secLeft}s...`;
+          btn.textContent = `⏳ Đang gia hạn: ${secLeft}s...`;
         } else {
           clearInterval(renewInterval);
           renewInterval = null;
           btn.disabled = false;
-          btn.textContent = `Renew (${RENEW_WAIT_SEC}s)`;
+          btn.textContent = `🔥 Gia Hạn Thêm 5h (${RENEW_WAIT_SEC}s)`;
 
           const baseTime = Math.max(Date.now(), expireAtMs);
           currentCycleIdx = currentCycleIdx + 1;
@@ -297,7 +297,7 @@
           const newKey = calcKey(uid, currentCycleIdx);
           document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
           document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Renewed! Added 5 hours.";
+          document.getElementById("msg").textContent = "🎉 Gia hạn xong! Đã cộng thêm 5 giờ.";
         }
       }, 1000);
     }
@@ -305,14 +305,14 @@
     function copyKey() {
       const k = document.getElementById("keyOut").textContent;
       if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") {
-        document.getElementById("msg").textContent = "Get a UserId key first.";
+        document.getElementById("msg").textContent = "⚠️ Lấy key theo UserId trước đã!";
         return;
       }
 
       navigator.clipboard.writeText(k).then(() => {
-        document.getElementById("msg").textContent = "Key copied.";
+        document.getElementById("msg").textContent = "✅ Đã sao chép key!";
       }).catch(() => {
-        document.getElementById("msg").textContent = "Long-press the key to copy.";
+        document.getElementById("msg").textContent = "📋 Giữ lì vào key để sao chép.";
       });
     }
 
@@ -323,13 +323,13 @@
         return;
       }
       resetKeyState();
-      document.getElementById("msg").textContent = "Click Get Key to start timer.";
+      document.getElementById("msg").textContent = "💡 Bấm Lấy Key để bắt đầu đếm thời gian.";
     });
 
     setInterval(() => {
       const el = document.getElementById("keyCountdown");
       if (isOwnerMode) {
-        el.textContent = "UNLIMITED";
+        el.textContent = "♾️ VÔ HẠN";
         return;
       }
       if (!hasTakenKey || !expireAtMs) {
@@ -341,7 +341,7 @@
         el.textContent = formatHMS(left);
       } else {
         el.textContent = "00:00:00";
-        document.getElementById("msg").textContent = "Key expired. Click Get Key or Renew.";
+        document.getElementById("msg").textContent = "⏰ Hết thời gian key! Bấm Lấy Key hoặc Gia Hạn.";
       }
     }, 1000);
   </script>
