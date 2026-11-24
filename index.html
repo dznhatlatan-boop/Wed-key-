@@ -46,17 +46,17 @@
     <h1>ak hud // KEY SYSTEM</h1>
     <p>Key riêng theo UserId • Bắt đầu đếm khi bấm Lấy Key</p>
 
-    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: hupbera23)" />
+    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: vd hupbera23)" />
 
     <div class="info-bar">
       <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div>
       <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
     </div>
 
-    <div id="keyOut" class="key-box">123456789-</div>
+    <div id="keyOut" class="key-box">vd 23456789-</div>
 
     <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button>
-    <button id="renewBtn" class="btn-renew" onclick="giaHan60s()">Gia Hạn (Đếm Ngược 30s)</button>
+    <button id="renewBtn" class="btn-renew" onclick="giaHan30s()">Gia Hạn (Đếm Ngược 30s)</button>
     <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
 
     <div id="msg" class="msg"></div>
@@ -141,7 +141,7 @@
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
       btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-      document.getElementById("msg").textContent = "Đang chờ 60 giây để gia hạn thêm 24 giờ...";
+      document.getElementById("msg").textContent = "Đang chờ 30 giây để gia hạn thêm 4 giờ...";
 
       renewInterval = setInterval(() => {
         secLeft--;
