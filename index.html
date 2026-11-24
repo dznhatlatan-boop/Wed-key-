@@ -44,54 +44,45 @@
 <body>
   <div class="box">
     <h1>TÂN HUB // KEY SYSTEM</h1>
-    <p>Key riêng theo UserId • Reset mỗi 24h • Gia hạn 60s</p>
+    <p>Key riêng theo UserId • Bắt đầu đếm khi bấm Lấy Key</p>
 
     <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" />
 
     <div class="info-bar">
-      <div>Chu kỳ hiện tại: <strong id="cycleLabel">--</strong></div>
-      <div>Reset key sau: <strong id="resetTimer">--:--:--</strong></div>
+      <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div>
+      <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
     </div>
 
     <div id="keyOut" class="key-box">----------</div>
 
-    <button class="btn-get" onclick="taoHoacCapNhatKey()">Lấy / Cập Nhật Key</button>
-    <button id="renewBtn" class="btn-renew" onclick="batDauGiaHan60s()">Gia Hạn (Đếm Ngược 60s)</button>
+    <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button>
+    <button id="renewBtn" class="btn-renew" onclick="giaHan60s()">Gia Hạn (Đếm Ngược 60s)</button>
     <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
 
     <div id="msg" class="msg"></div>
   </div>
 
   <script>
-    const SECRET_SALT = 7919; // Đổi số bí mật riêng của đại ca
-    const DAY_MS = 24 * 60 * 60 * 1000;
+    const SECRET_SALT = 7919; // Khớp _SecretSalt trong trai.lua
+    const KEY_TTL_MS = 24 * 60 * 60 * 1000;
+    const CYCLE_BUCKET_MS = 24 * 60 * 60 * 1000;
 
-    let countdownInterval = null;
-    let remainingSec = 0;
+    let hasTakenKey = false; // Chỉ bật true sau khi bấm nút Lấy Key
+    let expireAtMs = 0;
+    let currentCycleIdx = null;
+    let renewInterval = null;
 
-    function getBaseCycleIndex() {
-      // Giờ VN (+7)
-      const vnNow = Date.now() + 7 * 3600 * 1000;
-      return Math.floor(vnNow / DAY_MS);
+    function getCleanUid() {
+      return document.getElementById("uidInput").value.trim().replace(/\D/g, "");
     }
 
-    function getBonusCycles(uid) {
-      if (!uid) return 0;
-      const saved = Number(localStorage.getItem("tanhub_bonus_" + uid) || "0");
-      return Number.isFinite(saved) && saved > 0 ? saved : 0;
-    }
-
-    function addBonusCycle(uid) {
-      const nextBonus = getBonusCycles(uid) + 1;
-      localStorage.setItem("tanhub_bonus_" + uid, String(nextBonus));
-      return nextBonus;
+    function getCycleFromTimestamp(ms) {
+      return Math.floor(ms / CYCLE_BUCKET_MS);
     }
 
     function tinhKey(uid, cycleIdx) {
-      const clean = String(uid || "").replace(/\D/g, "");
-      if (!clean) return null;
       let hash = SECRET_SALT;
-      const mix = `${clean}_${cycleIdx}`;
+      const mix = `${uid}_${cycleIdx}`;
       for (let i = 0; i < mix.length; i++) {
         hash = (hash * 131 + mix.charCodeAt(i)) % 89999999;
       }
@@ -106,64 +97,79 @@
       return `${h}:${m}:${s}`;
     }
 
-    function capNhatDongHoReset() {
-      const vnNow = Date.now() + 7 * 3600 * 1000;
-      const nextReset = (Math.floor(vnNow / DAY_MS) + 1) * DAY_MS;
-      document.getElementById("resetTimer").textContent = formatHMS(nextReset - vnNow);
+    function resetTrangThaiChuaLayKey() {
+      hasTakenKey = false;
+      expireAtMs = 0;
+      currentCycleIdx = null;
+      document.getElementById("cycleLabel").textContent = "Chưa lấy";
+      document.getElementById("keyOut").textContent = "----------";
+      document.getElementById("keyCountdown").textContent = "--:--:--";
     }
 
-    function taoHoacCapNhatKey() {
-      const uid = document.getElementById("uidInput").value.trim().replace(/\D/g, "");
+    function layKeyMoiTuLucNay() {
+      const uid = getCleanUid();
       if (!uid) {
         document.getElementById("msg").textContent = "Hãy nhập đúng UserId Roblox trước!";
         return;
       }
-      const activeCycle = getBaseCycleIndex() + getBonusCycles(uid);
-      const key = tinhKey(uid, activeCycle);
-      document.getElementById("cycleLabel").textContent = "#" + activeCycle;
+
+      const now = Date.now();
+      currentCycleIdx = getCycleFromTimestamp(now);
+      expireAtMs = now + KEY_TTL_MS;
+      hasTakenKey = true;
+
+      const key = tinhKey(uid, currentCycleIdx);
+      document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
       document.getElementById("keyOut").textContent = key;
-      document.getElementById("msg").textContent = "Đã tạo key cho chu kỳ #" + activeCycle;
+      document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now());
+      document.getElementById("msg").textContent = "Đã lấy key! Bắt đầu đếm ngược từ bây giờ.";
     }
 
-    function batDauGiaHan60s() {
-      const uid = document.getElementById("uidInput").value.trim().replace(/\D/g, "");
+    function giaHan60s() {
+      const uid = getCleanUid();
       if (!uid) {
         document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
         return;
       }
-      if (countdownInterval) return;
+      if (!hasTakenKey || !expireAtMs) {
+        document.getElementById("msg").textContent = "Hãy bấm Lấy Key trước rồi mới gia hạn!";
+        return;
+      }
+      if (renewInterval) return;
 
-      remainingSec = 60;
+      let secLeft = 60;
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
-      btn.textContent = `Đang đếm ngược gia hạn: ${remainingSec}s...`;
-      document.getElementById("msg").textContent = "Vui lòng chờ 60 giây để cộng thêm chu kỳ key...";
+      btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
+      document.getElementById("msg").textContent = "Đang chờ 60 giây để gia hạn thêm 24 giờ...";
 
-      countdownInterval = setInterval(() => {
-        remainingSec--;
-        if (remainingSec > 0) {
-          btn.textContent = `Đang đếm ngược gia hạn: ${remainingSec}s...`;
+      renewInterval = setInterval(() => {
+        secLeft--;
+        if (secLeft > 0) {
+          btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
         } else {
-          clearInterval(countdownInterval);
-          countdownInterval = null;
+          clearInterval(renewInterval);
+          renewInterval = null;
           btn.disabled = false;
           btn.textContent = "Gia Hạn (Đếm Ngược 60s)";
 
-          const newBonus = addBonusCycle(uid);
-          const activeCycle = getBaseCycleIndex() + newBonus;
-          const newKey = tinhKey(uid, activeCycle);
+          const baseTime = Math.max(Date.now(), expireAtMs);
+          currentCycleIdx = currentCycleIdx + 1;
+          expireAtMs = baseTime + KEY_TTL_MS;
+          hasTakenKey = true;
 
-          document.getElementById("cycleLabel").textContent = "#" + activeCycle;
+          const newKey = tinhKey(uid, currentCycleIdx);
+          document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
           document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Gia hạn xong! Đã cấp key mới cho chu kỳ #" + activeCycle;
+          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 24h.";
         }
       }, 1000);
     }
 
     function copyKey() {
       const k = document.getElementById("keyOut").textContent;
-      if (!k || k === "----------") {
-        document.getElementById("msg").textContent = "Chưa có key để sao chép!";
+      if (!hasTakenKey || !k || k === "----------") {
+        document.getElementById("msg").textContent = "Bấm Lấy Key trước đã!";
         return;
       }
       navigator.clipboard.writeText(k).then(() => {
@@ -173,8 +179,25 @@
       });
     }
 
-    capNhatDongHoReset();
-    setInterval(capNhatDongHoReset, 1000);
+    document.getElementById("uidInput").addEventListener("input", () => {
+      resetTrangThaiChuaLayKey();
+      document.getElementById("msg").textContent = "Bấm Lấy Key để bắt đầu đếm thời gian.";
+    });
+
+    setInterval(() => {
+      const el = document.getElementById("keyCountdown");
+      if (!hasTakenKey || !expireAtMs) {
+        el.textContent = "--:--:--";
+        return;
+      }
+      const left = expireAtMs - Date.now();
+      if (left > 0) {
+        el.textContent = formatHMS(left);
+      } else {
+        el.textContent = "00:00:00";
+        document.getElementById("msg").textContent = "Đã hết thời gian key! Bấm Lấy Key hoặc Gia Hạn.";
+      }
+    }, 1000);
   </script>
 </body>
 </html>
