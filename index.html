@@ -1,259 +1,454 @@
-<!DOCTYPE html> <!-- Khai báo tài liệu chuẩn HTML5 cho trình duyệt -->
-<html lang="vi"> <!-- Thẻ gốc của trang web, khai báo ngôn ngữ tiếng Việt -->
-<head> <!-- Phần đầu trang: chứa cấu hình hiển thị và CSS, không hiện trực tiếp trên màn hình -->
-  <meta charset="UTF-8" /> <!-- Mã hóa ký tự UTF-8 để hiển thị tiếng Việt có dấu không bị lỗi -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Giúp trang co giãn vừa màn hình điện thoại -->
-  <title>AK HUB // KEY SYSTEM</title> <!-- Tên hiển thị trên tab trình duyệt -->
-  <style> <!-- Bắt đầu vùng viết CSS quy định giao diện -->
-    * { box-sizing: border-box; font-family: Arial, sans-serif; } <!-- Tính kích thước gồm cả viền/padding và dùng font Arial -->
-    body { <!-- Căn giữa khung key toàn màn hình và đặt nền tối -->
-      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #0f172a; color: #f8fafc; padding: 16px;
-    }
-    .box { <!-- Khung hộp chứa chính của trang lấy key -->
-      width: 100%; max-width: 400px; background: #1e293b; border: 1px solid #334155;
-      border-radius: 14px; padding: 22px; text-align: center;
-    }
-    h1 { margin: 0 0 6px; font-size: 20px; color: #38bdf8; } <!-- Kiểu chữ tiêu đề lớn màu xanh ngọc -->
-    p { margin: 0 0 14px; font-size: 13px; color: #cbd5e1; } <!-- Kiểu chữ mô tả phụ bên dưới tiêu đề -->
-    input { <!-- Kiểu ô nhập UserId / tên chủ hub -->
-      width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #475569;
-      background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center;
-    }
-    .info-bar { <!-- Thanh hiển thị thông tin chu kỳ và thời gian còn lại -->
-      background: #0f172a; border: 1px solid #334155; border-radius: 10px;
-      padding: 10px; font-size: 12px; color: #93c5fd; margin-bottom: 12px;
-      line-height: 1.5;
-    }
-    .key-box { <!-- Ô hiển thị dãy số key sau khi lấy -->
-      background: #0f172a; border: 1px dashed #64748b; border-radius: 10px;
-      padding: 14px; font-size: 20px; font-weight: bold; letter-spacing: 1.5px;
-      color: #4ade80; margin-bottom: 14px; word-break: break-all;
-    }
-    button { <!-- Kiểu chung cho các nút bấm -->
-      width: 100%; padding: 12px; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
-    }
-    .btn-get { background: #2563eb; color: #fff; } <!-- Nút Lấy Key màu xanh dương -->
-    .btn-renew { background: #d89006; color: #fff; } <!-- Nút Gia Hạn màu vàng cam -->
-    .btn-renew:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; } <!-- Màu nút Gia Hạn khi đang đếm ngược bị khóa bấm -->
-    .btn-copy { background: #16a34a; color: #fff; } <!-- Nút Sao Chép Key màu xanh lá -->
-    .msg { font-size: 12px; color: #94a3b8; min-height: 18px; } <!-- Dòng thông báo trạng thái/lỗi ở cuối hộp -->
-  </style> <!-- Kết thúc vùng CSS -->
-</head> <!-- Kết thúc phần head -->
-<body> <!-- Bắt đầu phần nội dung hiển thị trên màn hình -->
-  <div class="box"> <!-- Mở hộp giao diện chính -->
-    <h1>AK HUB // KEY SYSTEM</h1> <!-- Tiêu đề chính của hệ thống key -->
-    <p>Key riêng theo UserId • Chu kỳ 5 giờ • Bắt đầu đếm khi bấm Lấy Key</p> <!-- Dòng mô tả cơ chế key -->
+-- [[ AK HUB - Owner Gold / User Blue - Credit: tan ]] --
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
-    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" /> <!-- Ô để người dùng nhập UserId hoặc tên chủ hub -->
+local KEY_LINK = "https://dznhatlatan-boop.github.io/Wed-key-/"
+local SECRET_SALT = 7919
+local CYCLE_SECONDS = 18000 -- 5 giờ (khớp 5 * 60 * 60 trên web)
 
-    <div class="info-bar"> <!-- Khung thông tin thời gian -->
-      <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div> <!-- Hiển thị số chu kỳ hiện tại hoặc trạng thái CHỦ HUB -->
-      <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div> <!-- Hiển thị đồng hồ đếm ngược giờ:phút:giây -->
-    </div>
+local OWNER_NAMES = {
+    ["hupbera23"] = true,
+    ["hupbera5"] = true,
+}
 
-    <div id="keyOut" class="key-box">----------</div> <!-- Khu vực xuất mã key 8 chữ số -->
+local OWNER_USER_IDS = {
+    -- Điền thêm số UserId thật của đại ca nếu muốn, VD: [123456789] = true,
+}
 
-    <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button> <!-- Bấm để tạo key mới và bắt đầu đếm giờ -->
-    <button id="renewBtn" class="btn-renew" onclick="giaHan30s()">Gia Hạn (Đếm Ngược 30s)</button> <!-- Bấm để chờ 30s rồi cộng thêm 1 chu kỳ key -->
-    <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button> <!-- Bấm để copy key vào clipboard -->
+local function waitPlayer()
+    local lp = Players.LocalPlayer
+    for _ = 1, 100 do
+        if lp then break end
+        task.wait(0.1)
+        lp = Players.LocalPlayer
+    end
+    return lp
+end
 
-    <div id="msg" class="msg"></div> <!-- Chỗ in lời nhắn hướng dẫn hoặc báo lỗi -->
-  </div> <!-- Đóng hộp giao diện chính -->
+local LocalPlayer = waitPlayer()
 
-  <script> <!-- Bắt đầu vùng code logic JavaScript -->
-    const SECRET_SALT = 7919; <!-- Hằng số bí mật dùng để băm key, phải khớp với bên Lua -->
-    const KEY_TTL_MS = 5 * 60 * 60 * 1000; <!-- Thời hạn mỗi lần lấy/gia hạn key tính bằng mili-giây (5 giờ) -->
-    const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000; <!-- Độ dài 1 chu kỳ tính key (5 giờ = 18000 giây) -->
-    const RENEW_WAIT_SEC = 30; <!-- Số giây đếm ngược chờ trước khi gia hạn xong -->
+local function isOwnerAccount(player)
+    if not player then
+        return false
+    end
+    local uid = tonumber(player.UserId)
+    if uid and OWNER_USER_IDS[uid] == true then
+        return true
+    end
+    local uname = string.lower(tostring(player.Name or ""))
+    local dname = string.lower(tostring(player.DisplayName or ""))
+    if OWNER_NAMES[uname] or OWNER_NAMES[dname] then
+        return true
+    end
+    return false
+end
 
-    const OWNER_ACCOUNTS = ["hupbera23", "hupbera5"]; <!-- Danh sách tên tài khoản chủ hub được nhận diện riêng -->
+local function getCurrentCycle()
+    return math.floor(os.time() / CYCLE_SECONDS)
+end
 
-    let hasTakenKey = false; <!-- Cờ đánh dấu đã bấm Lấy Key hay chưa -->
-    let isOwnerMode = false; <!-- Cờ đánh dấu đang nhập đúng tài khoản chủ hub -->
-    let expireAtMs = 0; <!-- Mốc thời gian (ms) key sẽ hết hạn -->
-    let currentCycleIdx = null; <!-- Chỉ số chu kỳ key hiện tại -->
-    let renewInterval = null; <!-- Lưu bộ đếm 1 giây của nút Gia Hạn để tránh bấm đúp nhiều lần -->
+local function buildUserKey(userId, cycleIdx)
+    local raw = tostring(userId or "") .. "_" .. tostring(cycleIdx or 0)
+    local hash = SECRET_SALT
+    for i = 1, #raw do
+        hash = (hash * 131 + string.byte(raw, i)) % 89999999
+    end
+    return tostring(10000000 + hash)
+end
 
-    function getRawInput() { <!-- Lấy chuỗi người dùng nhập vào ô input và cắt khoảng trắng 2 đầu -->
-      return document.getElementById("uidInput").value.trim();
-    }
+local function isValidKey(inputText)
+    if not LocalPlayer then
+        return false
+    end
+    local cleaned = tostring(inputText or ""):gsub("%D", "")
+    if cleaned == "" then
+        return false
+    end
+    local uid = LocalPlayer.UserId
+    local nowCycle = getCurrentCycle()
+    for offset = -1, 30 do
+        if cleaned == buildUserKey(uid, nowCycle + offset) then
+            return true
+        end
+    end
+    return false
+end
 
-    function getCleanUid() { <!-- Lọc chỉ giữ lại chữ số để lấy UserId sạch -->
-      return getRawInput().replace(/\D/g, "");
-    }
+local function getTargets()
+    local list = {}
+    if LocalPlayer then
+        local pg = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
+        if pg then
+            table.insert(list, pg)
+        end
+    end
+    pcall(function()
+        local cg = game:GetService("CoreGui")
+        if cg then
+            table.insert(list, cg)
+        end
+    end)
+    if StarterGui then
+        table.insert(list, StarterGui)
+    end
+    return list
+end
 
-    function isOwnerInput(raw) { <!-- Kiểm tra chuỗi nhập có nằm trong danh sách chủ hub không (không phân biệt hoa thường) -->
-      return OWNER_ACCOUNTS.includes(String(raw || "").toLowerCase());
-    }
+local targets = getTargets()
+local isOwner = isOwnerAccount(LocalPlayer)
 
-    function getCycleFromTimestamp(ms) { <!-- Quy đổi mốc thời gian (ms) thành số thứ tự chu kỳ -->
-      return Math.floor(ms / CYCLE_BUCKET_MS);
-    }
+-- Bảng màu theo vai trò: Chủ Hub = Vàng, Người thường = Xanh
+local THEME = isOwner and {
+    windowBg = Color3.fromRGB(26, 20, 8),
+    stroke = Color3.fromRGB(255, 200, 0),
+    titleText = Color3.fromRGB(255, 215, 0),
+    btnBg = Color3.fromRGB(217, 155, 0),
+    btnText = Color3.fromRGB(20, 15, 5),
+    cardBg = Color3.fromRGB(38, 30, 12),
+    minBtnBg = Color3.fromRGB(48, 38, 14),
+    badgeText = Color3.fromRGB(255, 225, 70),
+} or {
+    windowBg = Color3.fromRGB(10, 14, 22),
+    stroke = Color3.fromRGB(0, 150, 255),
+    titleText = Color3.fromRGB(0, 190, 255),
+    btnBg = Color3.fromRGB(0, 130, 240),
+    btnText = Color3.fromRGB(255, 255, 255),
+    cardBg = Color3.fromRGB(16, 22, 35),
+    minBtnBg = Color3.fromRGB(20, 30, 48),
+    badgeText = Color3.fromRGB(120, 205, 255),
+}
 
-    function tinhKey(uid, cycleIdx) { <!-- Hàm băm tạo key 8 chữ số từ UserId và chu kỳ -->
-      let hash = SECRET_SALT; <!-- Khởi tạo giá trị băm bằng SECRET_SALT -->
-      const mix = `${uid}_${cycleIdx}`; <!-- Ghép UserId với chu kỳ thành chuỗi đầu vào -->
-      for (let i = 0; i < mix.length; i++) { <!-- Duyệt từng ký tự của chuỗi đầu vào -->
-        hash = (hash * 131 + mix.charCodeAt(i)) % 89999999; <!-- Trộn mã ASCII từng ký tự và giới hạn modulo -->
-      }
-      return String(10000000 + hash); <!-- Cộng thêm 10000000 để luôn ra số có đúng 8 chữ số -->
-    }
+local templateGui = Instance.new("ScreenGui")
+templateGui.Name = "ServerHubTemplate"
+templateGui.ResetOnSpawn = false
+templateGui.IgnoreGuiInset = true
+templateGui.DisplayOrder = 999999
 
-    function formatHMS(ms) { <!-- Đổi mili-giây còn lại sang định dạng HH:MM:SS -->
-      const totalSec = Math.max(0, Math.floor(ms / 1000)); <!-- Đổi ra tổng số giây, không để số âm -->
-      const h = String(Math.floor(totalSec / 3600)).padStart(2, "0"); <!-- Tính số giờ và thêm số 0 phía trước nếu < 10 -->
-      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0"); <!-- Tính số phút dư và thêm số 0 đầu -->
-      const s = String(totalSec % 60).padStart(2, "0"); <!-- Tính số giây dư và thêm số 0 đầu -->
-      return `${h}:${m}:${s}`; <!-- Trả về chuỗi giờ:phút:giây -->
-    }
+-- ==================== MENU CHÍNH ====================
+local mainWin = Instance.new("Frame")
+mainWin.Name = "MainHubWindow"
+mainWin.Size = UDim2.new(0, 300, 0, 350)
+mainWin.Position = UDim2.new(0.05, 0, 0.16, 0)
+mainWin.BackgroundColor3 = THEME.windowBg
+mainWin.BorderSizePixel = 0
+mainWin.Active = true
+mainWin.Draggable = true
+mainWin.Visible = isOwner
+mainWin.Parent = templateGui
 
-    function resetTrangThaiChuaLayKey() { <!-- Đưa giao diện và biến trạng thái về lúc chưa lấy key -->
-      hasTakenKey = false;
-      isOwnerMode = false;
-      expireAtMs = 0;
-      currentCycleIdx = null;
-      document.getElementById("cycleLabel").textContent = "Chưa lấy";
-      document.getElementById("keyOut").textContent = "----------";
-      document.getElementById("keyCountdown").textContent = "--:--:--";
-    }
+local mwCorner = Instance.new("UICorner")
+mwCorner.CornerRadius = UDim.new(0, 12)
+mwCorner.Parent = mainWin
 
-    function applyOwnerState(raw) { <!-- Hiển thị trạng thái Chủ Hub vô hạn khi gõ tên chủ hub -->
-      hasTakenKey = false;
-      isOwnerMode = true;
-      expireAtMs = 0;
-      currentCycleIdx = "OWNER";
-      document.getElementById("cycleLabel").textContent = "CHỦ HUB (VÔ HẠN)";
-      document.getElementById("keyCountdown").textContent = "VÔ HẠN";
-      document.getElementById("keyOut").textContent = "OWNER-UNLIMITED";
-      document.getElementById("msg").textContent = `Chủ Hub (${raw}) — Vào game tự mở vô hạn.`;
-    }
+local mwStroke = Instance.new("UIStroke")
+mwStroke.Color = THEME.stroke
+mwStroke.Thickness = 2
+mwStroke.Parent = mainWin
 
-    function layKeyMoiTuLucNay() { <!-- Xử lý khi bấm nút Lấy Key -->
-      const raw = getRawInput(); <!-- Đọc giá trị ô nhập -->
-      if (!raw) { <!-- Nếu để trống thì báo nhắc nhập -->
-        document.getElementById("msg").textContent = "Hãy nhập UserId Roblox trước!";
-        return;
-      }
+local titleLab = Instance.new("TextLabel")
+titleLab.Name = "TitleLabel"
+titleLab.Size = UDim2.new(1, -45, 0, 38)
+titleLab.Position = UDim2.new(0, 12, 0, 0)
+titleLab.BackgroundTransparency = 1
+titleLab.Text = isOwner and "👑 AK HUB [OWNER VN] - by tân" or "✨ AK HUB - by tân ✨"
+titleLab.TextColor3 = THEME.titleText
+titleLab.TextSize = 12
+titleLab.Font = Enum.Font.GothamBold
+titleLab.TextXAlignment = Enum.TextXAlignment.Left
+titleLab.Parent = mainWin
 
-      if (isOwnerInput(raw)) { <!-- Nếu là tên chủ hub thì chuyển sang trạng thái chủ hub -->
-        applyOwnerState(raw);
-        return;
-      }
+local minBtn = Instance.new("TextButton")
+minBtn.Name = "MinButton"
+minBtn.Size = UDim2.new(0, 28, 0, 28)
+minBtn.Position = UDim2.new(1, -34, 0, 5)
+minBtn.BackgroundColor3 = THEME.minBtnBg
+minBtn.Text = "-"
+minBtn.TextColor3 = THEME.titleText
+minBtn.TextSize = 16
+minBtn.Font = Enum.Font.GothamBold
+minBtn.Parent = mainWin
 
-      const uid = getCleanUid(); <!-- Lấy phần số UserId -->
-      if (!uid) { <!-- Nếu không có chữ số nào thì báo lỗi -->
-        document.getElementById("msg").textContent = "UserId chỉ gồm chữ số (VD: 123456789)!";
-        return;
-      }
+local bodyF = Instance.new("Frame")
+bodyF.Name = "BodyFrame"
+bodyF.Size = UDim2.new(1, 0, 1, -38)
+bodyF.Position = UDim2.new(0, 0, 0, 38)
+bodyF.BackgroundTransparency = 1
+bodyF.Parent = mainWin
 
-      isOwnerMode = false; <!-- Tắt chế độ chủ hub -->
-      const now = Date.now(); <!-- Lấy thời điểm hiện tại tính bằng ms -->
-      currentCycleIdx = getCycleFromTimestamp(now); <!-- Tính chu kỳ hiện tại -->
-      expireAtMs = now + KEY_TTL_MS; <!-- Tính mốc hết hạn sau 5 giờ -->
-      hasTakenKey = true; <!-- Đánh dấu đã lấy key thành công -->
+local accName = LocalPlayer and (LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")") or "Unknown"
+local usrBox = Instance.new("TextLabel")
+usrBox.Name = "UserBox"
+usrBox.Size = UDim2.new(0.92, 0, 0, 26)
+usrBox.Position = UDim2.new(0.04, 0, 0.02, 0)
+usrBox.BackgroundColor3 = THEME.cardBg
+usrBox.BorderSizePixel = 0
+usrBox.Text = isOwner and ("  👑 OWNER VN: " .. accName) or ("  👤 Acc: " .. accName)
+usrBox.TextColor3 = THEME.badgeText
+usrBox.TextSize = 11
+usrBox.Font = Enum.Font.GothamSemibold
+usrBox.TextXAlignment = Enum.TextXAlignment.Left
+usrBox.Parent = bodyF
 
-      const key = tinhKey(uid, currentCycleIdx); <!-- Sinh key cho UserId và chu kỳ hiện tại -->
-      document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx; <!-- Hiện mã chu kỳ -->
-      document.getElementById("keyOut").textContent = key; <!-- Hiện key ra màn hình -->
-      document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now()); <!-- Cập nhật đồng hồ đếm ngược ngay -->
-      document.getElementById("msg").textContent = "Đã lấy key! Có hiệu lực 5 giờ kể từ bây giờ."; <!-- Báo đã lấy key -->
-    }
+local devType = (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled) and "PC" or "Mobile"
+local devBox = Instance.new("TextLabel")
+devBox.Name = "DeviceBox"
+devBox.Size = UDim2.new(0.92, 0, 0, 26)
+devBox.Position = UDim2.new(0.04, 0, 0.11, 0)
+devBox.BackgroundColor3 = THEME.cardBg
+devBox.BorderSizePixel = 0
+devBox.Text = "  🎮 Device: " .. devType
+devBox.TextColor3 = isOwner and Color3.fromRGB(255, 220, 90) or Color3.fromRGB(0, 255, 150)
+devBox.TextSize = 11
+devBox.Font = Enum.Font.GothamSemibold
+devBox.TextXAlignment = Enum.TextXAlignment.Left
+devBox.Parent = bodyF
 
-    function giaHan30s() { <!-- Xử lý khi bấm nút Gia Hạn -->
-      const raw = getRawInput(); <!-- Đọc giá trị ô nhập -->
-      if (!raw) { <!-- Chưa nhập gì thì báo lỗi -->
-        document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
-        return;
-      }
+local scanBtn = Instance.new("TextButton")
+scanBtn.Name = "ScanButton"
+scanBtn.Size = UDim2.new(0.92, 0, 0, 38)
+scanBtn.Position = UDim2.new(0.04, 0, 0.24, 0)
+scanBtn.BackgroundColor3 = THEME.btnBg
+scanBtn.Text = "Find a server for one person."
+scanBtn.TextColor3 = THEME.btnText
+scanBtn.TextSize = 12
+scanBtn.Font = Enum.Font.GothamBold
+scanBtn.Parent = bodyF
 
-      if (isOwnerInput(raw) || isOwnerMode) { <!-- Nếu là chủ hub thì không cần gia hạn -->
-        applyOwnerState(raw);
-        return;
-      }
+local scrollArea = Instance.new("ScrollingFrame")
+scrollArea.Name = "ServerList"
+scrollArea.Size = UDim2.new(0.92, 0, 0, 185)
+scrollArea.Position = UDim2.new(0.04, 0, 0.40, 0)
+scrollArea.BackgroundColor3 = Color3.fromRGB(6, 9, 15)
+scrollArea.BorderSizePixel = 0
+scrollArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollArea.ScrollBarThickness = 4
+scrollArea.Parent = bodyF
 
-      const uid = getCleanUid(); <!-- Lấy UserId dạng số -->
-      if (!uid) { <!-- UserId không hợp lệ -->
-        document.getElementById("msg").textContent = "UserId không hợp lệ!";
-        return;
-      }
-      if (!hasTakenKey || !expireAtMs) { <!-- Chưa lấy key thì bắt lấy key trước -->
-        document.getElementById("msg").textContent = "Hãy bấm Lấy Key trước rồi mới gia hạn!";
-        return;
-      }
-      if (renewInterval) return; <!-- Nếu đang đếm ngược gia hạn rồi thì bỏ qua lần bấm thừa -->
+local uiList = Instance.new("UIListLayout")
+uiList.SortOrder = Enum.SortOrder.LayoutOrder
+uiList.Padding = UDim.new(0, 6)
+uiList.Parent = scrollArea
 
-      let secLeft = RENEW_WAIT_SEC; <!-- Khởi tạo số giây đếm ngược (30s) -->
-      const btn = document.getElementById("renewBtn"); <!-- Lấy nút Gia Hạn -->
-      btn.disabled = true; <!-- Khóa nút tạm thời lúc đang chờ -->
-      btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`; <!-- Đổi chữ trên nút theo số giây -->
-      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 5 giờ...`; <!-- Báo đang chờ -->
+-- ==================== KHUNG NHẬP KEY (MÀU XANH CHO NGƯỜI THƯỜNG) ====================
+local keyWin = Instance.new("Frame")
+keyWin.Name = "KeyWindow"
+keyWin.Size = UDim2.new(0, 286, 0, 195)
+keyWin.Position = UDim2.new(0.5, -143, 0.5, -97)
+keyWin.BackgroundColor3 = Color3.fromRGB(10, 16, 28)
+keyWin.BorderSizePixel = 0
+keyWin.Active = true
+keyWin.Draggable = true
+keyWin.Visible = not isOwner
+keyWin.Parent = templateGui
 
-      renewInterval = setInterval(() => { <!-- Chạy lặp mỗi 1000ms (1 giây) -->
-        secLeft--; <!-- Giảm số giây còn lại đi 1 -->
-        if (secLeft > 0) { <!-- Nếu vẫn còn giây thì cập nhật chữ đếm ngược -->
-          btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-        } else { <!-- Khi đếm về 0 -->
-          clearInterval(renewInterval); <!-- Dừng bộ đếm giây -->
-          renewInterval = null; <!-- Giải phóng biến bộ đếm -->
-          btn.disabled = false; <!-- Mở khóa lại nút Gia Hạn -->
-          btn.textContent = `Gia Hạn (Đếm Ngược ${RENEW_WAIT_SEC}s)`; <!-- Trả lại chữ mặc định cho nút -->
+local kwCorner = Instance.new("UICorner")
+kwCorner.CornerRadius = UDim.new(0, 12)
+kwCorner.Parent = keyWin
 
-          const baseTime = Math.max(Date.now(), expireAtMs); <!-- Lấy mốc lớn hơn giữa hiện tại và hạn cũ để cộng dồn -->
-          currentCycleIdx = currentCycleIdx + 1; <!-- Tăng chu kỳ lên 1 để tạo key chu kỳ mới -->
-          expireAtMs = baseTime + KEY_TTL_MS; <!-- Cộng thêm 5 giờ vào hạn sử dụng -->
-          hasTakenKey = true; <!-- Giữ trạng thái key đang hoạt động -->
+local kwStroke = Instance.new("UIStroke")
+kwStroke.Color = Color3.fromRGB(0, 150, 255)
+kwStroke.Thickness = 2
+kwStroke.Parent = keyWin
 
-          const newKey = tinhKey(uid, currentCycleIdx); <!-- Tính key mới theo chu kỳ mới -->
-          document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx; <!-- Cập nhật số chu kỳ mới -->
-          document.getElementById("keyOut").textContent = newKey; <!-- Hiển thị key mới -->
-          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 5h."; <!-- Báo gia hạn thành công -->
-        }
-      }, 1000);
-    }
+local kTitle = Instance.new("TextLabel")
+kTitle.Name = "KeyTitle"
+kTitle.Size = UDim2.new(1, -20, 0, 28)
+kTitle.Position = UDim2.new(0, 10, 0, 8)
+kTitle.BackgroundTransparency = 1
+kTitle.Text = "🔐 AK HUB // KEY SYSTEM"
+kTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
+kTitle.TextSize = 13
+kTitle.Font = Enum.Font.GothamBold
+kTitle.Parent = keyWin
 
-    function copyKey() { <!-- Sao chép key đang hiển thị vào bộ nhớ tạm -->
-      const k = document.getElementById("keyOut").textContent; <!-- Lấy nội dung trong ô key -->
-      if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") { <!-- Chưa có key thật thì không cho copy -->
-        document.getElementById("msg").textContent = "Bấm Lấy Key theo UserId trước đã!";
-        return;
-      }
-      navigator.clipboard.writeText(k).then(() => { <!-- Gọi API sao chép của trình duyệt -->
-        document.getElementById("msg").textContent = "Đã sao chép key!"; <!-- Báo copy thành công -->
-      }).catch(() => { <!-- Nếu trình duyệt/điện thoại chặn copy tự động -->
-        document.getElementById("msg").textContent = "Giữ lì vào dãy số để sao chép."; <!-- Hướng dẫn copy thủ công -->
-      });
-    }
+local kUidHint = Instance.new("TextLabel")
+kUidHint.Name = "UidHint"
+kUidHint.Size = UDim2.new(1, -20, 0, 18)
+kUidHint.Position = UDim2.new(0, 10, 0, 34)
+kUidHint.BackgroundTransparency = 1
+kUidHint.Text = "UserId: " .. tostring(LocalPlayer and LocalPlayer.UserId or "Unknown")
+kUidHint.TextColor3 = Color3.fromRGB(120, 205, 255)
+kUidHint.TextSize = 11
+kUidHint.Font = Enum.Font.GothamSemibold
+kUidHint.Parent = keyWin
 
-    document.getElementById("uidInput").addEventListener("input", () => { <!-- Lắng nghe mỗi khi người dùng gõ/sửa ô nhập -->
-      const raw = getRawInput(); <!-- Lấy giá trị mới nhất -->
-      if (isOwnerInput(raw)) { <!-- Nếu gõ đúng tên chủ hub thì bật trạng thái chủ hub -->
-        applyOwnerState(raw);
-        return;
-      }
-      resetTrangThaiChuaLayKey(); <!-- Nếu đổi sang UserId khác thì reset key cũ để bấm lấy lại -->
-      document.getElementById("msg").textContent = "Bấm Lấy Key để bắt đầu đếm thời gian.";
-    });
+local keyBox = Instance.new("TextBox")
+keyBox.Name = "KeyInput"
+keyBox.Size = UDim2.new(0.88, 0, 0, 36)
+keyBox.Position = UDim2.new(0.06, 0, 0.31, 0)
+keyBox.BackgroundColor3 = Color3.fromRGB(18, 28, 46)
+keyBox.BorderSizePixel = 0
+keyBox.Text = ""
+keyBox.PlaceholderText = "Paste key from website..."
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.PlaceholderColor3 = Color3.fromRGB(130, 150, 180)
+keyBox.TextSize = 12
+keyBox.Font = Enum.Font.GothamSemibold
+keyBox.ClearTextOnFocus = false
+keyBox.Parent = keyWin
 
-    setInterval(() => { <!-- Vòng lặp chạy mỗi 1 giây để cập nhật đồng hồ đếm ngược -->
-      const el = document.getElementById("keyCountdown"); <!-- Lấy thẻ hiển thị thời gian còn lại -->
-      if (isOwnerMode) { <!-- Nếu là chủ hub thì luôn hiển thị VÔ HẠN -->
-        el.textContent = "VÔ HẠN";
-        return;
-      }
-      if (!hasTakenKey || !expireAtMs) { <!-- Nếu chưa lấy key thì hiển thị --:--:-- -->
-        el.textContent = "--:--:--";
-        return;
-      }
-      const left = expireAtMs - Date.now(); <!-- Tính số mili-giây còn lại đến lúc hết hạn -->
-      if (left > 0) { <!-- Nếu chưa hết hạn thì cập nhật giờ:phút:giây -->
-        el.textContent = formatHMS(left);
-      } else { <!-- Nếu đã hết hạn -->
-        el.textContent = "00:00:00";
-        document.getElementById("msg").textContent = "Đã hết thời gian key! Bấm Lấy Key hoặc Gia Hạn.";
-      }
-    }, 1000);
-  </script> <!-- Kết thúc vùng JavaScript -->
-</body> <!-- Kết thúc thân trang -->
-</html> <!-- Kết thúc tài liệu HTML -->
+local checkBtn = Instance.new("TextButton")
+checkBtn.Name = "ConfirmKeyBtn"
+checkBtn.Size = UDim2.new(0.42, 0, 0, 36)
+checkBtn.Position = UDim2.new(0.06, 0, 0.56, 0)
+checkBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 240)
+checkBtn.Text = "Verify"
+checkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkBtn.TextSize = 12
+checkBtn.Font = Enum.Font.GothamBold
+checkBtn.Parent = keyWin
+
+local getKeyBtn = Instance.new("TextButton")
+getKeyBtn.Name = "GetKeyBtn"
+getKeyBtn.Size = UDim2.new(0.42, 0, 0, 36)
+getKeyBtn.Position = UDim2.new(0.52, 0, 0.56, 0)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 95, 195)
+getKeyBtn.Text = "Get Key"
+getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+getKeyBtn.TextSize = 12
+getKeyBtn.Font = Enum.Font.GothamBold
+getKeyBtn.Parent = keyWin
+
+local kStatus = Instance.new("TextLabel")
+kStatus.Name = "KeyStatus"
+kStatus.Size = UDim2.new(0.92, 0, 0, 26)
+kStatus.Position = UDim2.new(0.04, 0, 0.79, 0)
+kStatus.BackgroundTransparency = 1
+kStatus.Text = "Click Get Key to copy link"
+kStatus.TextColor3 = Color3.fromRGB(160, 180, 210)
+kStatus.TextSize = 10
+kStatus.Font = Enum.Font.Gotham
+kStatus.TextWrapped = true
+kStatus.Parent = keyWin
+
+local function bindGui(rootGui)
+    local mw = rootGui:FindFirstChild("MainHubWindow")
+    local kw = rootGui:FindFirstChild("KeyWindow")
+    if not mw then return end
+
+    local bf = mw:FindFirstChild("BodyFrame")
+    local mb = mw:FindFirstChild("MinButton")
+    if mb and bf then
+        local minimized = false
+        mb.MouseButton1Click:Connect(function()
+            minimized = not minimized
+            bf.Visible = not minimized
+            mw.Size = minimized and UDim2.new(0, 300, 0, 38) or UDim2.new(0, 300, 0, 350)
+            mb.Text = minimized and "+" or "-"
+        end)
+    end
+
+    if bf then
+        local sBtn = bf:FindFirstChild("ScanButton")
+        local scArea = bf:FindFirstChild("ServerList")
+        if sBtn and scArea then
+            sBtn.MouseButton1Click:Connect(function()
+                for _, c in ipairs(scArea:GetChildren()) do
+                    if c:IsA("Frame") then c:Destroy() end
+                end
+                sBtn.Text = "Scanning..."
+                local okReq, raw = pcall(function()
+                    return game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+                end)
+                if okReq and type(raw) == "string" then
+                    local okDec, data = pcall(function()
+                        return HttpService:JSONDecode(raw)
+                    end)
+                    if okDec and type(data) == "table" and type(data.data) == "table" then
+                        for _, srv in ipairs(data.data) do
+                            local playing = srv.playing or 0
+                            local maxP = srv.maxPlayers or 0
+                            if playing >= 1 and playing <= 5 and srv.id ~= game.JobId then
+                                local card = Instance.new("Frame")
+                                card.Size = UDim2.new(1, -6, 0, 35)
+                                card.BackgroundColor3 = THEME.cardBg
+                                card.BorderSizePixel = 0
+                                card.Parent = scArea
+
+                                local lbl = Instance.new("TextLabel")
+                                lbl.Size = UDim2.new(0.68, -8, 1, 0)
+                                lbl.Position = UDim2.new(0, 8, 0, 0)
+                                lbl.BackgroundTransparency = 1
+                                lbl.Text = "👥 " .. playing .. "/" .. maxP .. " | " .. tostring(srv.id):sub(1, 8)
+                                lbl.TextColor3 = Color3.fromRGB(235, 240, 250)
+                                lbl.TextSize = 10
+                                lbl.Font = Enum.Font.GothamSemibold
+                                lbl.TextXAlignment = Enum.TextXAlignment.Left
+                                lbl.Parent = card
+
+                                local jBtn = Instance.new("TextButton")
+                                jBtn.Size = UDim2.new(0.28, 0, 0.72, 0)
+                                jBtn.Position = UDim2.new(0.70, 0, 0.14, 0)
+                                jBtn.BackgroundColor3 = THEME.btnBg
+                                jBtn.Text = "Join"
+                                jBtn.TextColor3 = THEME.btnText
+                                jBtn.TextSize = 10
+                                jBtn.Font = Enum.Font.GothamBold
+                                jBtn.Parent = card
+
+                                jBtn.MouseButton1Click:Connect(function()
+                                    pcall(function()
+                                        TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id, LocalPlayer)
+                                    end)
+                                end)
+                            end
+                        end
+                        local listLay = scArea:FindFirstChildOfClass("UIListLayout")
+                        if listLay then
+                            scArea.CanvasSize = UDim2.new(0, 0, 0, listLay.AbsoluteContentSize.Y + 10)
+                        end
+                    end
+                end
+                sBtn.Text = "Find a server for one person."
+            end)
+        end
+    end
+
+    if kw then
+        local kInp = kw:FindFirstChild("KeyInput")
+        local cBtn = kw:FindFirstChild("ConfirmKeyBtn")
+        local gBtn = kw:FindFirstChild("GetKeyBtn")
+        local stLbl = kw:FindFirstChild("KeyStatus")
+
+        if gBtn and stLbl then
+            gBtn.MouseButton1Click:Connect(function()
+                if type(setclipboard) == "function" then
+                    pcall(setclipboard, KEY_LINK)
+                    stLbl.Text = "Link copied! Paste in browser."
+                else
+                    stLbl.Text = KEY_LINK
+                end
+            end)
+        end
+
+        if cBtn and kInp and stLbl then
+            cBtn.MouseButton1Click:Connect(function()
+                if isValidKey(kInp.Text) then
+                    kw.Visible = false
+                    mw.Visible = true
+                else
+                    stLbl.Text = "Invalid key or wrong UserId!"
+                end
+            end)
+        end
+    end
+end
+
+for _, parentTarget in ipairs(targets) do
+    pcall(function()
+        local cloneGui = templateGui:Clone()
+        cloneGui.Name = "ServerPickerHub_" .. tostring(parentTarget.Name)
+        cloneGui.Enabled = true
+        cloneGui.ResetOnSpawn = false
+        cloneGui.IgnoreGuiInset = true
+        cloneGui.DisplayOrder = 999999
+        cloneGui.Parent = parentTarget
+        bindGui(cloneGui)
+    end)
+end
+
+templateGui:Destroy()
+                              
