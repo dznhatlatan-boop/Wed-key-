@@ -1,116 +1,115 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AK HUB // KEY SYSTEM</title>
-  <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body {
+<!DOCTYPE html> <!-- Khai báo tài liệu chuẩn HTML5 cho trình duyệt -->
+<html lang="vi"> <!-- Thẻ gốc của trang web, khai báo ngôn ngữ tiếng Việt -->
+<head> <!-- Phần đầu trang: chứa cấu hình hiển thị và CSS, không hiện trực tiếp trên màn hình -->
+  <meta charset="UTF-8" /> <!-- Mã hóa ký tự UTF-8 để hiển thị tiếng Việt có dấu không bị lỗi -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Giúp trang co giãn vừa màn hình điện thoại -->
+  <title>AK HUB // KEY SYSTEM</title> <!-- Tên hiển thị trên tab trình duyệt -->
+  <style> <!-- Bắt đầu vùng viết CSS quy định giao diện -->
+    * { box-sizing: border-box; font-family: Arial, sans-serif; } <!-- Tính kích thước gồm cả viền/padding và dùng font Arial -->
+    body { <!-- Căn giữa khung key toàn màn hình và đặt nền tối -->
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
       background: #0f172a; color: #f8fafc; padding: 16px;
     }
-    .box {
+    .box { <!-- Khung hộp chứa chính của trang lấy key -->
       width: 100%; max-width: 400px; background: #1e293b; border: 1px solid #334155;
       border-radius: 14px; padding: 22px; text-align: center;
     }
-    h1 { margin: 0 0 6px; font-size: 20px; color: #38bdf8; }
-    p { margin: 0 0 14px; font-size: 13px; color: #cbd5e1; }
-    input {
+    h1 { margin: 0 0 6px; font-size: 20px; color: #38bdf8; } <!-- Kiểu chữ tiêu đề lớn màu xanh ngọc -->
+    p { margin: 0 0 14px; font-size: 13px; color: #cbd5e1; } <!-- Kiểu chữ mô tả phụ bên dưới tiêu đề -->
+    input { <!-- Kiểu ô nhập UserId / tên chủ hub -->
       width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #475569;
       background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center;
     }
-    .info-bar {
+    .info-bar { <!-- Thanh hiển thị thông tin chu kỳ và thời gian còn lại -->
       background: #0f172a; border: 1px solid #334155; border-radius: 10px;
       padding: 10px; font-size: 12px; color: #93c5fd; margin-bottom: 12px;
       line-height: 1.5;
     }
-    .key-box {
+    .key-box { <!-- Ô hiển thị dãy số key sau khi lấy -->
       background: #0f172a; border: 1px dashed #64748b; border-radius: 10px;
       padding: 14px; font-size: 20px; font-weight: bold; letter-spacing: 1.5px;
       color: #4ade80; margin-bottom: 14px; word-break: break-all;
     }
-    button {
+    button { <!-- Kiểu chung cho các nút bấm -->
       width: 100%; padding: 12px; border: none; border-radius: 10px;
       font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
     }
-    .btn-get { background: #2563eb; color: #fff; }
-    .btn-renew { background: #d89006; color: #fff; }
-    .btn-renew:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; }
-    .btn-copy { background: #16a34a; color: #fff; }
-    .msg { font-size: 12px; color: #94a3b8; min-height: 18px; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>AK HUB // KEY SYSTEM</h1>
-    <p>Key riêng theo UserId • Chu kỳ 5 giờ • Bắt đầu đếm khi bấm Lấy Key</p>
+    .btn-get { background: #2563eb; color: #fff; } <!-- Nút Lấy Key màu xanh dương -->
+    .btn-renew { background: #d89006; color: #fff; } <!-- Nút Gia Hạn màu vàng cam -->
+    .btn-renew:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; } <!-- Màu nút Gia Hạn khi đang đếm ngược bị khóa bấm -->
+    .btn-copy { background: #16a34a; color: #fff; } <!-- Nút Sao Chép Key màu xanh lá -->
+    .msg { font-size: 12px; color: #94a3b8; min-height: 18px; } <!-- Dòng thông báo trạng thái/lỗi ở cuối hộp -->
+  </style> <!-- Kết thúc vùng CSS -->
+</head> <!-- Kết thúc phần head -->
+<body> <!-- Bắt đầu phần nội dung hiển thị trên màn hình -->
+  <div class="box"> <!-- Mở hộp giao diện chính -->
+    <h1>AK HUB // KEY SYSTEM</h1> <!-- Tiêu đề chính của hệ thống key -->
+    <p>Key riêng theo UserId • Chu kỳ 5 giờ • Bắt đầu đếm khi bấm Lấy Key</p> <!-- Dòng mô tả cơ chế key -->
 
-    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" />
+    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" /> <!-- Ô để người dùng nhập UserId hoặc tên chủ hub -->
 
-    <div class="info-bar">
-      <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div>
-      <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
+    <div class="info-bar"> <!-- Khung thông tin thời gian -->
+      <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div> <!-- Hiển thị số chu kỳ hiện tại hoặc trạng thái CHỦ HUB -->
+      <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div> <!-- Hiển thị đồng hồ đếm ngược giờ:phút:giây -->
     </div>
 
-    <div id="keyOut" class="key-box">----------</div>
+    <div id="keyOut" class="key-box">----------</div> <!-- Khu vực xuất mã key 8 chữ số -->
 
-    <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button>
-    <button id="renewBtn" class="btn-renew" onclick="giaHan30s()">Gia Hạn (Đếm Ngược 30s)</button>
-    <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
+    <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button> <!-- Bấm để tạo key mới và bắt đầu đếm giờ -->
+    <button id="renewBtn" class="btn-renew" onclick="giaHan30s()">Gia Hạn (Đếm Ngược 30s)</button> <!-- Bấm để chờ 30s rồi cộng thêm 1 chu kỳ key -->
+    <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button> <!-- Bấm để copy key vào clipboard -->
 
-    <div id="msg" class="msg"></div>
-  </div>
+    <div id="msg" class="msg"></div> <!-- Chỗ in lời nhắn hướng dẫn hoặc báo lỗi -->
+  </div> <!-- Đóng hộp giao diện chính -->
 
-  <script>
-    const SECRET_SALT = 7919;
-    const KEY_TTL_MS = 5 * 60 * 60 * 1000;
-    const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000;
-    const RENEW_WAIT_SEC = 30;
+  <script> <!-- Bắt đầu vùng code logic JavaScript -->
+    const SECRET_SALT = 7919; <!-- Hằng số bí mật dùng để băm key, phải khớp với bên Lua -->
+    const KEY_TTL_MS = 5 * 60 * 60 * 1000; <!-- Thời hạn mỗi lần lấy/gia hạn key tính bằng mili-giây (5 giờ) -->
+    const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000; <!-- Độ dài 1 chu kỳ tính key (5 giờ = 18000 giây) -->
+    const RENEW_WAIT_SEC = 30; <!-- Số giây đếm ngược chờ trước khi gia hạn xong -->
 
-    const OWNER_ACCOUNTS = ["Hupbera23"];
-    const OWNER_ACCOUNTS = ["Hupbera5"];
+    const OWNER_ACCOUNTS = ["hupbera23", "hupbera5"]; <!-- Danh sách tên tài khoản chủ hub được nhận diện riêng -->
 
-    let hasTakenKey = false;
-    let isOwnerMode = false;
-    let expireAtMs = 0;
-    let currentCycleIdx = null;
-    let renewInterval = null;
+    let hasTakenKey = false; <!-- Cờ đánh dấu đã bấm Lấy Key hay chưa -->
+    let isOwnerMode = false; <!-- Cờ đánh dấu đang nhập đúng tài khoản chủ hub -->
+    let expireAtMs = 0; <!-- Mốc thời gian (ms) key sẽ hết hạn -->
+    let currentCycleIdx = null; <!-- Chỉ số chu kỳ key hiện tại -->
+    let renewInterval = null; <!-- Lưu bộ đếm 1 giây của nút Gia Hạn để tránh bấm đúp nhiều lần -->
 
-    function getRawInput() {
+    function getRawInput() { <!-- Lấy chuỗi người dùng nhập vào ô input và cắt khoảng trắng 2 đầu -->
       return document.getElementById("uidInput").value.trim();
     }
 
-    function getCleanUid() {
+    function getCleanUid() { <!-- Lọc chỉ giữ lại chữ số để lấy UserId sạch -->
       return getRawInput().replace(/\D/g, "");
     }
 
-    function isOwnerInput(raw) {
+    function isOwnerInput(raw) { <!-- Kiểm tra chuỗi nhập có nằm trong danh sách chủ hub không (không phân biệt hoa thường) -->
       return OWNER_ACCOUNTS.includes(String(raw || "").toLowerCase());
     }
 
-    function getCycleFromTimestamp(ms) {
+    function getCycleFromTimestamp(ms) { <!-- Quy đổi mốc thời gian (ms) thành số thứ tự chu kỳ -->
       return Math.floor(ms / CYCLE_BUCKET_MS);
     }
 
-    function tinhKey(uid, cycleIdx) {
-      let hash = SECRET_SALT;
-      const mix = `${uid}_${cycleIdx}`;
-      for (let i = 0; i < mix.length; i++) {
-        hash = (hash * 131 + mix.charCodeAt(i)) % 89999999;
+    function tinhKey(uid, cycleIdx) { <!-- Hàm băm tạo key 8 chữ số từ UserId và chu kỳ -->
+      let hash = SECRET_SALT; <!-- Khởi tạo giá trị băm bằng SECRET_SALT -->
+      const mix = `${uid}_${cycleIdx}`; <!-- Ghép UserId với chu kỳ thành chuỗi đầu vào -->
+      for (let i = 0; i < mix.length; i++) { <!-- Duyệt từng ký tự của chuỗi đầu vào -->
+        hash = (hash * 131 + mix.charCodeAt(i)) % 89999999; <!-- Trộn mã ASCII từng ký tự và giới hạn modulo -->
       }
-      return String(10000000 + hash);
+      return String(10000000 + hash); <!-- Cộng thêm 10000000 để luôn ra số có đúng 8 chữ số -->
     }
 
-    function formatHMS(ms) {
-      const totalSec = Math.max(0, Math.floor(ms / 1000));
-      const h = String(Math.floor(totalSec / 3600)).padStart(2, "0");
-      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
-      const s = String(totalSec % 60).padStart(2, "0");
-      return `${h}:${m}:${s}`;
+    function formatHMS(ms) { <!-- Đổi mili-giây còn lại sang định dạng HH:MM:SS -->
+      const totalSec = Math.max(0, Math.floor(ms / 1000)); <!-- Đổi ra tổng số giây, không để số âm -->
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, "0"); <!-- Tính số giờ và thêm số 0 phía trước nếu < 10 -->
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0"); <!-- Tính số phút dư và thêm số 0 đầu -->
+      const s = String(totalSec % 60).padStart(2, "0"); <!-- Tính số giây dư và thêm số 0 đầu -->
+      return `${h}:${m}:${s}`; <!-- Trả về chuỗi giờ:phút:giây -->
     }
 
-    function resetTrangThaiChuaLayKey() {
+    function resetTrangThaiChuaLayKey() { <!-- Đưa giao diện và biến trạng thái về lúc chưa lấy key -->
       hasTakenKey = false;
       isOwnerMode = false;
       expireAtMs = 0;
@@ -120,7 +119,7 @@
       document.getElementById("keyCountdown").textContent = "--:--:--";
     }
 
-    function applyOwnerState(raw) {
+    function applyOwnerState(raw) { <!-- Hiển thị trạng thái Chủ Hub vô hạn khi gõ tên chủ hub -->
       hasTakenKey = false;
       isOwnerMode = true;
       expireAtMs = 0;
@@ -131,130 +130,130 @@
       document.getElementById("msg").textContent = `Chủ Hub (${raw}) — Vào game tự mở vô hạn.`;
     }
 
-    function layKeyMoiTuLucNay() {
-      const raw = getRawInput();
-      if (!raw) {
+    function layKeyMoiTuLucNay() { <!-- Xử lý khi bấm nút Lấy Key -->
+      const raw = getRawInput(); <!-- Đọc giá trị ô nhập -->
+      if (!raw) { <!-- Nếu để trống thì báo nhắc nhập -->
         document.getElementById("msg").textContent = "Hãy nhập UserId Roblox trước!";
         return;
       }
 
-      if (isOwnerInput(raw)) {
+      if (isOwnerInput(raw)) { <!-- Nếu là tên chủ hub thì chuyển sang trạng thái chủ hub -->
         applyOwnerState(raw);
         return;
       }
 
-      const uid = getCleanUid();
-      if (!uid) {
+      const uid = getCleanUid(); <!-- Lấy phần số UserId -->
+      if (!uid) { <!-- Nếu không có chữ số nào thì báo lỗi -->
         document.getElementById("msg").textContent = "UserId chỉ gồm chữ số (VD: 123456789)!";
         return;
       }
 
-      isOwnerMode = false;
-      const now = Date.now();
-      currentCycleIdx = getCycleFromTimestamp(now);
-      expireAtMs = now + KEY_TTL_MS;
-      hasTakenKey = true;
+      isOwnerMode = false; <!-- Tắt chế độ chủ hub -->
+      const now = Date.now(); <!-- Lấy thời điểm hiện tại tính bằng ms -->
+      currentCycleIdx = getCycleFromTimestamp(now); <!-- Tính chu kỳ hiện tại -->
+      expireAtMs = now + KEY_TTL_MS; <!-- Tính mốc hết hạn sau 5 giờ -->
+      hasTakenKey = true; <!-- Đánh dấu đã lấy key thành công -->
 
-      const key = tinhKey(uid, currentCycleIdx);
-      document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
-      document.getElementById("keyOut").textContent = key;
-      document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now());
-      document.getElementById("msg").textContent = "Đã lấy key! Có hiệu lực 5 giờ kể từ bây giờ.";
+      const key = tinhKey(uid, currentCycleIdx); <!-- Sinh key cho UserId và chu kỳ hiện tại -->
+      document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx; <!-- Hiện mã chu kỳ -->
+      document.getElementById("keyOut").textContent = key; <!-- Hiện key ra màn hình -->
+      document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now()); <!-- Cập nhật đồng hồ đếm ngược ngay -->
+      document.getElementById("msg").textContent = "Đã lấy key! Có hiệu lực 5 giờ kể từ bây giờ."; <!-- Báo đã lấy key -->
     }
 
-    function giaHan30s() {
-      const raw = getRawInput();
-      if (!raw) {
+    function giaHan30s() { <!-- Xử lý khi bấm nút Gia Hạn -->
+      const raw = getRawInput(); <!-- Đọc giá trị ô nhập -->
+      if (!raw) { <!-- Chưa nhập gì thì báo lỗi -->
         document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
         return;
       }
 
-      if (isOwnerInput(raw) || isOwnerMode) {
+      if (isOwnerInput(raw) || isOwnerMode) { <!-- Nếu là chủ hub thì không cần gia hạn -->
         applyOwnerState(raw);
         return;
       }
 
-      const uid = getCleanUid();
-      if (!uid) {
+      const uid = getCleanUid(); <!-- Lấy UserId dạng số -->
+      if (!uid) { <!-- UserId không hợp lệ -->
         document.getElementById("msg").textContent = "UserId không hợp lệ!";
         return;
       }
-      if (!hasTakenKey || !expireAtMs) {
+      if (!hasTakenKey || !expireAtMs) { <!-- Chưa lấy key thì bắt lấy key trước -->
         document.getElementById("msg").textContent = "Hãy bấm Lấy Key trước rồi mới gia hạn!";
         return;
       }
-      if (renewInterval) return;
+      if (renewInterval) return; <!-- Nếu đang đếm ngược gia hạn rồi thì bỏ qua lần bấm thừa -->
 
-      let secLeft = RENEW_WAIT_SEC;
-      const btn = document.getElementById("renewBtn");
-      btn.disabled = true;
-      btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 1 giờ...`;
+      let secLeft = RENEW_WAIT_SEC; <!-- Khởi tạo số giây đếm ngược (30s) -->
+      const btn = document.getElementById("renewBtn"); <!-- Lấy nút Gia Hạn -->
+      btn.disabled = true; <!-- Khóa nút tạm thời lúc đang chờ -->
+      btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`; <!-- Đổi chữ trên nút theo số giây -->
+      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 5 giờ...`; <!-- Báo đang chờ -->
 
-      renewInterval = setInterval(() => {
-        secLeft--;
-        if (secLeft > 0) {
+      renewInterval = setInterval(() => { <!-- Chạy lặp mỗi 1000ms (1 giây) -->
+        secLeft--; <!-- Giảm số giây còn lại đi 1 -->
+        if (secLeft > 0) { <!-- Nếu vẫn còn giây thì cập nhật chữ đếm ngược -->
           btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-        } else {
-          clearInterval(renewInterval);
-          renewInterval = null;
-          btn.disabled = false;
-          btn.textContent = `Gia Hạn (Đếm Ngược ${RENEW_WAIT_SEC}s)`;
+        } else { <!-- Khi đếm về 0 -->
+          clearInterval(renewInterval); <!-- Dừng bộ đếm giây -->
+          renewInterval = null; <!-- Giải phóng biến bộ đếm -->
+          btn.disabled = false; <!-- Mở khóa lại nút Gia Hạn -->
+          btn.textContent = `Gia Hạn (Đếm Ngược ${RENEW_WAIT_SEC}s)`; <!-- Trả lại chữ mặc định cho nút -->
 
-          const baseTime = Math.max(Date.now(), expireAtMs);
-          currentCycleIdx = currentCycleIdx + 1;
-          expireAtMs = baseTime + KEY_TTL_MS;
-          hasTakenKey = true;
+          const baseTime = Math.max(Date.now(), expireAtMs); <!-- Lấy mốc lớn hơn giữa hiện tại và hạn cũ để cộng dồn -->
+          currentCycleIdx = currentCycleIdx + 1; <!-- Tăng chu kỳ lên 1 để tạo key chu kỳ mới -->
+          expireAtMs = baseTime + KEY_TTL_MS; <!-- Cộng thêm 5 giờ vào hạn sử dụng -->
+          hasTakenKey = true; <!-- Giữ trạng thái key đang hoạt động -->
 
-          const newKey = tinhKey(uid, currentCycleIdx);
-          document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
-          document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 1h.";
+          const newKey = tinhKey(uid, currentCycleIdx); <!-- Tính key mới theo chu kỳ mới -->
+          document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx; <!-- Cập nhật số chu kỳ mới -->
+          document.getElementById("keyOut").textContent = newKey; <!-- Hiển thị key mới -->
+          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 5h."; <!-- Báo gia hạn thành công -->
         }
       }, 1000);
     }
 
-    function copyKey() {
-      const k = document.getElementById("keyOut").textContent;
-      if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") {
+    function copyKey() { <!-- Sao chép key đang hiển thị vào bộ nhớ tạm -->
+      const k = document.getElementById("keyOut").textContent; <!-- Lấy nội dung trong ô key -->
+      if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") { <!-- Chưa có key thật thì không cho copy -->
         document.getElementById("msg").textContent = "Bấm Lấy Key theo UserId trước đã!";
         return;
       }
-      navigator.clipboard.writeText(k).then(() => {
-        document.getElementById("msg").textContent = "Đã sao chép key!";
-      }).catch(() => {
-        document.getElementById("msg").textContent = "Giữ lì vào dãy số để sao chép.";
+      navigator.clipboard.writeText(k).then(() => { <!-- Gọi API sao chép của trình duyệt -->
+        document.getElementById("msg").textContent = "Đã sao chép key!"; <!-- Báo copy thành công -->
+      }).catch(() => { <!-- Nếu trình duyệt/điện thoại chặn copy tự động -->
+        document.getElementById("msg").textContent = "Giữ lì vào dãy số để sao chép."; <!-- Hướng dẫn copy thủ công -->
       });
     }
 
-    document.getElementById("uidInput").addEventListener("input", () => {
-      const raw = getRawInput();
-      if (isOwnerInput(raw)) {
+    document.getElementById("uidInput").addEventListener("input", () => { <!-- Lắng nghe mỗi khi người dùng gõ/sửa ô nhập -->
+      const raw = getRawInput(); <!-- Lấy giá trị mới nhất -->
+      if (isOwnerInput(raw)) { <!-- Nếu gõ đúng tên chủ hub thì bật trạng thái chủ hub -->
         applyOwnerState(raw);
         return;
       }
-      resetTrangThaiChuaLayKey();
+      resetTrangThaiChuaLayKey(); <!-- Nếu đổi sang UserId khác thì reset key cũ để bấm lấy lại -->
       document.getElementById("msg").textContent = "Bấm Lấy Key để bắt đầu đếm thời gian.";
     });
 
-    setInterval(() => {
-      const el = document.getElementById("keyCountdown");
-      if (isOwnerMode) {
+    setInterval(() => { <!-- Vòng lặp chạy mỗi 1 giây để cập nhật đồng hồ đếm ngược -->
+      const el = document.getElementById("keyCountdown"); <!-- Lấy thẻ hiển thị thời gian còn lại -->
+      if (isOwnerMode) { <!-- Nếu là chủ hub thì luôn hiển thị VÔ HẠN -->
         el.textContent = "VÔ HẠN";
         return;
       }
-      if (!hasTakenKey || !expireAtMs) {
+      if (!hasTakenKey || !expireAtMs) { <!-- Nếu chưa lấy key thì hiển thị --:--:-- -->
         el.textContent = "--:--:--";
         return;
       }
-      const left = expireAtMs - Date.now();
-      if (left > 0) {
+      const left = expireAtMs - Date.now(); <!-- Tính số mili-giây còn lại đến lúc hết hạn -->
+      if (left > 0) { <!-- Nếu chưa hết hạn thì cập nhật giờ:phút:giây -->
         el.textContent = formatHMS(left);
-      } else {
+      } else { <!-- Nếu đã hết hạn -->
         el.textContent = "00:00:00";
         document.getElementById("msg").textContent = "Đã hết thời gian key! Bấm Lấy Key hoặc Gia Hạn.";
       }
     }, 1000);
-  </script>
-</body>
-</html>
+  </script> <!-- Kết thúc vùng JavaScript -->
+</body> <!-- Kết thúc thân trang -->
+</html> <!-- Kết thúc tài liệu HTML -->
