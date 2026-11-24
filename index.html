@@ -68,7 +68,7 @@
     const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000;
     const RENEW_WAIT_SEC = 30;
 
-    const OWNER_ACCOUNTS = ["hupbera23"];
+    const OWNER_ACCOUNTS = ["Hupbera23"];
 
     let hasTakenKey = false;
     let isOwnerMode = false;
@@ -188,7 +188,7 @@
       const btn = document.getElementById("renewBtn");
       btn.disabled = true;
       btn.textContent = `Đang đếm ngược gia hạn: ${secLeft}s...`;
-      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 5 giờ...`;
+      document.getElementById("msg").textContent = `Đang chờ ${RENEW_WAIT_SEC} giây để gia hạn thêm 1 giờ...`;
 
       renewInterval = setInterval(() => {
         secLeft--;
@@ -208,7 +208,7 @@
           const newKey = tinhKey(uid, currentCycleIdx);
           document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
           document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 5h.";
+          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 1h.";
         }
       }, 1000);
     }
