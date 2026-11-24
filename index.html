@@ -35,7 +35,7 @@
       font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
     }
     .btn-get { background: #2563eb; color: #fff; }
-    .btn-renew { background: #d97706; color: #fff; }
+    .btn-renew { background: #d89006; color: #fff; }
     .btn-renew:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; }
     .btn-copy { background: #16a34a; color: #fff; }
     .msg { font-size: 12px; color: #94a3b8; min-height: 18px; }
@@ -64,8 +64,8 @@
 
   <script>
     const SECRET_SALT = 7919; // Khớp _SecretSalt trong trai.lua
-    const KEY_TTL_MS = 24 * 60 * 60 * 1000;
-    const CYCLE_BUCKET_MS = 24 * 60 * 60 * 1000;
+    const KEY_TTL_MS = 5 * 60 * 60 * 1000;
+    const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000;
 
     let hasTakenKey = false; // Chỉ bật true sau khi bấm nút Lấy Key
     let expireAtMs = 0;
