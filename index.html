@@ -1,35 +1,180 @@
-local _KeyLink = "https://dznhatlatan-boop.github.io/Wed-key-/"
-local _SecretSalt = 7919
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TÂN HUB // KEY SYSTEM</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0f172a; color: #f8fafc; padding: 16px;
+    }
+    .box {
+      width: 100%; max-width: 400px; background: #1e293b; border: 1px solid #334155;
+      border-radius: 14px; padding: 22px; text-align: center;
+    }
+    h1 { margin: 0 0 6px; font-size: 20px; color: #38bdf8; }
+    p { margin: 0 0 14px; font-size: 13px; color: #cbd5e1; }
+    input {
+      width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #475569;
+      background: #0f172a; color: #fff; font-size: 14px; margin-bottom: 12px; text-align: center;
+    }
+    .info-bar {
+      background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+      padding: 10px; font-size: 12px; color: #93c5fd; margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .key-box {
+      background: #0f172a; border: 1px dashed #64748b; border-radius: 10px;
+      padding: 14px; font-size: 20px; font-weight: bold; letter-spacing: 1.5px;
+      color: #4ade80; margin-bottom: 14px; word-break: break-all;
+    }
+    button {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
+    }
+    .btn-get { background: #2563eb; color: #fff; }
+    .btn-renew { background: #d97706; color: #fff; }
+    .btn-renew:disabled { background: #475569; color: #cbd5e1; cursor: not-allowed; }
+    .btn-copy { background: #16a34a; color: #fff; }
+    .msg { font-size: 12px; color: #94a3b8; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>TÂN HUB // KEY SYSTEM</h1>
+    <p>Key riêng theo UserId • Reset mỗi 24h • Gia hạn 60s</p>
 
-local function _GetBaseCycleIndex()
-    -- Giờ Việt Nam (+7), mỗi chu kỳ 86400 giây (24h)
-    local vnTime = os.time() + (7 * 3600)
-    return math.floor(vnTime / 86400)
-end
+    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" />
 
-local function _TinhKey(userId, cycleIdx)
-    local str = tostring(userId or "") .. "_" .. tostring(cycleIdx or 0)
-    local hash = _SecretSalt
-    for i = 1, #str do
-        local b = string.byte(str, i)
-        hash = (hash * 131 + b) % 89999999
-    end
-    return tostring(10000000 + hash)
-end
+    <div class="info-bar">
+      <div>Chu kỳ hiện tại: <strong id="cycleLabel">--</strong></div>
+      <div>Reset key sau: <strong id="resetTimer">--:--:--</strong></div>
+    </div>
 
-local function _IsValidKey(inputKey)
-    local cleanKey = tostring(inputKey or ""):gsub("%D", "")
-    if cleanKey == "" then
-        return false
-    end
+    <div id="keyOut" class="key-box">----------</div>
 
-    local baseCycle = _GetBaseCycleIndex()
-    -- Cho phép khớp với chu kỳ hiện tại hoặc các chu kỳ gia hạn (tối đa 30 lần gia hạn)
-    for offset = 0, 30 do
-        local candidateKey = _TinhKey(_MePlr.UserId, baseCycle + offset)
-        if cleanKey == candidateKey then
-            return true
-        end
-    end
-    return false
-end
+    <button class="btn-get" onclick="taoHoacCapNhatKey()">Lấy / Cập Nhật Key</button>
+    <button id="renewBtn" class="btn-renew" onclick="batDauGiaHan60s()">Gia Hạn (Đếm Ngược 60s)</button>
+    <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script>
+    const SECRET_SALT = 7919; // Đổi số bí mật riêng của đại ca
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    let countdownInterval = null;
+    let remainingSec = 0;
+
+    function getBaseCycleIndex() {
+      // Giờ VN (+7)
+      const vnNow = Date.now() + 7 * 3600 * 1000;
+      return Math.floor(vnNow / DAY_MS);
+    }
+
+    function getBonusCycles(uid) {
+      if (!uid) return 0;
+      const saved = Number(localStorage.getItem("tanhub_bonus_" + uid) || "0");
+      return Number.isFinite(saved) && saved > 0 ? saved : 0;
+    }
+
+    function addBonusCycle(uid) {
+      const nextBonus = getBonusCycles(uid) + 1;
+      localStorage.setItem("tanhub_bonus_" + uid, String(nextBonus));
+      return nextBonus;
+    }
+
+    function tinhKey(uid, cycleIdx) {
+      const clean = String(uid || "").replace(/\D/g, "");
+      if (!clean) return null;
+      let hash = SECRET_SALT;
+      const mix = `${clean}_${cycleIdx}`;
+      for (let i = 0; i < mix.length; i++) {
+        hash = (hash * 131 + mix.charCodeAt(i)) % 89999999;
+      }
+      return String(10000000 + hash);
+    }
+
+    function formatHMS(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, "0");
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
+      const s = String(totalSec % 60).padStart(2, "0");
+      return `${h}:${m}:${s}`;
+    }
+
+    function capNhatDongHoReset() {
+      const vnNow = Date.now() + 7 * 3600 * 1000;
+      const nextReset = (Math.floor(vnNow / DAY_MS) + 1) * DAY_MS;
+      document.getElementById("resetTimer").textContent = formatHMS(nextReset - vnNow);
+    }
+
+    function taoHoacCapNhatKey() {
+      const uid = document.getElementById("uidInput").value.trim().replace(/\D/g, "");
+      if (!uid) {
+        document.getElementById("msg").textContent = "Hãy nhập đúng UserId Roblox trước!";
+        return;
+      }
+      const activeCycle = getBaseCycleIndex() + getBonusCycles(uid);
+      const key = tinhKey(uid, activeCycle);
+      document.getElementById("cycleLabel").textContent = "#" + activeCycle;
+      document.getElementById("keyOut").textContent = key;
+      document.getElementById("msg").textContent = "Đã tạo key cho chu kỳ #" + activeCycle;
+    }
+
+    function batDauGiaHan60s() {
+      const uid = document.getElementById("uidInput").value.trim().replace(/\D/g, "");
+      if (!uid) {
+        document.getElementById("msg").textContent = "Nhập UserId trước khi bấm gia hạn!";
+        return;
+      }
+      if (countdownInterval) return;
+
+      remainingSec = 60;
+      const btn = document.getElementById("renewBtn");
+      btn.disabled = true;
+      btn.textContent = `Đang đếm ngược gia hạn: ${remainingSec}s...`;
+      document.getElementById("msg").textContent = "Vui lòng chờ 60 giây để cộng thêm chu kỳ key...";
+
+      countdownInterval = setInterval(() => {
+        remainingSec--;
+        if (remainingSec > 0) {
+          btn.textContent = `Đang đếm ngược gia hạn: ${remainingSec}s...`;
+        } else {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          btn.disabled = false;
+          btn.textContent = "Gia Hạn (Đếm Ngược 60s)";
+
+          const newBonus = addBonusCycle(uid);
+          const activeCycle = getBaseCycleIndex() + newBonus;
+          const newKey = tinhKey(uid, activeCycle);
+
+          document.getElementById("cycleLabel").textContent = "#" + activeCycle;
+          document.getElementById("keyOut").textContent = newKey;
+          document.getElementById("msg").textContent = "Gia hạn xong! Đã cấp key mới cho chu kỳ #" + activeCycle;
+        }
+      }, 1000);
+    }
+
+    function copyKey() {
+      const k = document.getElementById("keyOut").textContent;
+      if (!k || k === "----------") {
+        document.getElementById("msg").textContent = "Chưa có key để sao chép!";
+        return;
+      }
+      navigator.clipboard.writeText(k).then(() => {
+        document.getElementById("msg").textContent = "Đã sao chép key!";
+      }).catch(() => {
+        document.getElementById("msg").textContent = "Giữ lì vào dãy số để sao chép.";
+      });
+    }
+
+    capNhatDongHoReset();
+    setInterval(capNhatDongHoReset, 1000);
+  </script>
+</body>
+</html>
