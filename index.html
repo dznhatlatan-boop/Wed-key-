@@ -43,20 +43,20 @@
 </head>
 <body>
   <div class="box">
-    <h1>TÂN HUB // KEY SYSTEM</h1>
+    <h1>ak hud // KEY SYSTEM</h1>
     <p>Key riêng theo UserId • Bắt đầu đếm khi bấm Lấy Key</p>
 
-    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: 123456789)" />
+    <input id="uidInput" type="text" placeholder="Nhập UserId Roblox (VD: hupbera23)" />
 
     <div class="info-bar">
       <div>Chu kỳ key: <strong id="cycleLabel">Chưa lấy</strong></div>
       <div>Thời gian còn lại: <strong id="keyCountdown">--:--:--</strong></div>
     </div>
 
-    <div id="keyOut" class="key-box">----------</div>
+    <div id="keyOut" class="key-box">123456789-</div>
 
     <button class="btn-get" onclick="layKeyMoiTuLucNay()">Lấy Key (Bắt Đầu Đếm)</button>
-    <button id="renewBtn" class="btn-renew" onclick="giaHan60s()">Gia Hạn (Đếm Ngược 60s)</button>
+    <button id="renewBtn" class="btn-renew" onclick="giaHan60s()">Gia Hạn (Đếm Ngược 30s)</button>
     <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
 
     <div id="msg" class="msg"></div>
@@ -151,7 +151,7 @@
           clearInterval(renewInterval);
           renewInterval = null;
           btn.disabled = false;
-          btn.textContent = "Gia Hạn (Đếm Ngược 60s)";
+          btn.textContent = "Gia Hạn (Đếm Ngược 30s)";
 
           const baseTime = Math.max(Date.now(), expireAtMs);
           currentCycleIdx = currentCycleIdx + 1;
@@ -161,7 +161,7 @@
           const newKey = tinhKey(uid, currentCycleIdx);
           document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
           document.getElementById("keyOut").textContent = newKey;
-          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 24h.";
+          document.getElementById("msg").textContent = "Gia hạn xong! Key mới đã được cộng thêm 4h.";
         }
       }, 1000);
     }
