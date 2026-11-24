@@ -3,80 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TÂN HUB // GET KEY</title>
+  <title>TÂN HUB // KEY SYSTEM</title>
   <style>
     * { box-sizing: border-box; font-family: Arial, sans-serif; }
     body {
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #090d16; color: #e6eef8; padding: 16px;
+      background: #0f172a; color: #f8fafc; padding: 16px;
     }
-    .card {
-      width: 100%; max-width: 420px; background: #101726; border: 1px solid #1e3a5f;
-      border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    .box {
+      width: 100%; max-width: 390px; background: #1e293b; border: 1px solid #334155;
+      border-radius: 14px; padding: 22px; text-align: center;
     }
-    .badge {
-      display: inline-block; background: #0088ff; color: #fff; font-size: 11px;
-      font-weight: bold; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
-    }
-    h1 { margin: 0 0 6px; font-size: 20px; color: #38bdf8; }
-    p { margin: 0 0 18px; font-size: 13px; color: #9fb3c8; line-height: 1.5; }
+    h1 { margin: 0 0 8px; font-size: 20px; color: #38bdf8; }
+    p { margin: 0 0 16px; font-size: 13px; color: #cbd5e1; }
     .key-box {
-      background: #090e1a; border: 1px dashed #38bdf8; border-radius: 10px;
-      padding: 14px; text-align: center; font-size: 18px; font-weight: bold;
-      letter-spacing: 1px; color: #34d399; margin-bottom: 14px; display: none;
+      background: #0f172a; border: 1px dashed #64748b; border-radius: 10px;
+      padding: 14px; font-size: 20px; font-weight: bold; letter-spacing: 1.5px;
+      color: #4ade80; margin-bottom: 16px; word-break: break-all;
     }
     button {
-      width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 14px;
-      font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 10px;
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
     }
-    .btn-get { background: #0284c7; color: #fff; }
-    .btn-get:hover { background: #0369a1; }
-    .btn-copy { background: #10b981; color: #fff; display: none; }
-    .btn-copy:hover { background: #059669; }
-    .status { font-size: 12px; text-align: center; color: #94a3b8; min-height: 18px; }
+    .btn-get { background: #2563eb; color: #fff; }
+    .btn-copy { background: #16a34a; color: #fff; }
+    .msg { font-size: 12px; color: #94a3b8; min-height: 18px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <span class="badge">PREMIUM AUTH</span>
+  <div class="box">
     <h1>TÂN HUB // KEY SYSTEM</h1>
-    <p>Bấm nút bên dưới để nhận key, sau đó copy key và dán vào khung xác minh trong game.</p>
-
-    <button class="btn-get" id="getBtn" onclick="startGetKey()">🔑 Lấy Key Ngay</button>
-    <div class="key-box" id="keyBox">123</div>
-    <button class="btn-copy" id="copyBtn" onclick="copyKey()">📋 Copy Key</button>
-
-    <div class="status" id="status">Trạng thái: Sẵn sàng</div>
+    <p>Mỗi lần bấm tạo một mã key mới khác nhau.</p>
+    <div id="keyOut" class="key-box">----------</div>
+    <button class="btn-get" onclick="taoKeyMoi()">Lấy Key Mới</button>
+    <button class="btn-copy" onclick="copyKey()">Sao Chép Key</button>
+    <div id="msg" class="msg"></div>
   </div>
 
   <script>
-    const KEY_VALUE = "123"; // Trùng với _ValidKey trong script Roblox
+    const HE_SO = 3;
+    const CONG_THEM = 17;
+    const CHIA_LAY_DU = 97;
 
-    function startGetKey() {
-      const getBtn = document.getElementById("getBtn");
-      const status = document.getElementById("status");
-      let sec = 5;
-      getBtn.disabled = true;
-
-      const timer = setInterval(() => {
-        status.textContent = `Đang tạo key... vui lòng chờ ${sec}s`;
-        sec--;
-        if (sec < 0) {
-          clearInterval(timer);
-          getBtn.style.display = "none";
-          document.getElementById("keyBox").textContent = KEY_VALUE;
-          document.getElementById("keyBox").style.display = "block";
-          document.getElementById("copyBtn").style.display = "block";
-          status.textContent = "Đã tạo key thành công! Bấm Copy Key để sao chép.";
-        }
-      }, 1000);
+    function taoKeyMoi() {
+      const goc = Math.floor(10000000 + Math.random() * 89999999);
+      const maCheck = ((goc * HE_SO + CONG_THEM) % CHIA_LAY_DU);
+      const duoi = String(maCheck).padStart(2, "0");
+      const keyFull = `${goc}${duoi}`;
+      document.getElementById("keyOut").textContent = keyFull;
+      document.getElementById("msg").textContent = "Đã tạo key mới!";
     }
 
     function copyKey() {
-      navigator.clipboard.writeText(KEY_VALUE).then(() => {
-        document.getElementById("status").textContent = "✅ Đã copy key vào bộ nhớ tạm!";
+      const k = document.getElementById("keyOut").textContent;
+      if (!k || k === "----------") {
+        document.getElementById("msg").textContent = "Bấm Lấy Key Mới trước đã!";
+        return;
+      }
+      navigator.clipboard.writeText(k).then(() => {
+        document.getElementById("msg").textContent = "Đã sao chép key!";
+      }).catch(() => {
+        document.getElementById("msg").textContent = "Giữ lì vào dãy số để sao chép.";
       });
     }
+
+    taoKeyMoi();
   </script>
 </body>
 </html>
