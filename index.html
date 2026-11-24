@@ -1,454 +1,349 @@
--- [[ AK HUB - Owner Gold / User Blue - Credit: tan ]] --
-local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AK HUB // KEY SYSTEM</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-local KEY_LINK = "https://dznhatlatan-boop.github.io/Wed-key-/"
-local SECRET_SALT = 7919
-local CYCLE_SECONDS = 18000 -- 5 giờ (khớp 5 * 60 * 60 trên web)
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b1120;
+      color: #f8fafc;
+      padding: 20px;
+    }
 
-local OWNER_NAMES = {
-    ["hupbera23"] = true,
-    ["hupbera5"] = true,
-}
+    .box {
+      width: 100%;
+      max-width: 390px;
+      background: #1a2232;
+      border: 1px solid #2b364b;
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+    }
 
-local OWNER_USER_IDS = {
-    -- Điền thêm số UserId thật của đại ca nếu muốn, VD: [123456789] = true,
-}
+    h1 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+    }
 
-local function waitPlayer()
-    local lp = Players.LocalPlayer
-    for _ = 1, 100 do
-        if lp then break end
-        task.wait(0.1)
-        lp = Players.LocalPlayer
-    end
-    return lp
-end
+    p {
+      margin: 0 0 16px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
 
-local LocalPlayer = waitPlayer()
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #0d1424;
+      color: #f8fafc;
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: center;
+      outline: none;
+    }
 
-local function isOwnerAccount(player)
-    if not player then
-        return false
-    end
-    local uid = tonumber(player.UserId)
-    if uid and OWNER_USER_IDS[uid] == true then
-        return true
-    end
-    local uname = string.lower(tostring(player.Name or ""))
-    local dname = string.lower(tostring(player.DisplayName or ""))
-    if OWNER_NAMES[uname] or OWNER_NAMES[dname] then
-        return true
-    end
-    return false
-end
+    input:focus {
+      border-color: #38bdf8;
+    }
 
-local function getCurrentCycle()
-    return math.floor(os.time() / CYCLE_SECONDS)
-end
+    .info-bar {
+      background: #0d1424;
+      border: 1px solid #263248;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 12px;
+      color: #93c5fd;
+      margin-bottom: 12px;
+      line-height: 1.55;
+    }
 
-local function buildUserKey(userId, cycleIdx)
-    local raw = tostring(userId or "") .. "_" .. tostring(cycleIdx or 0)
-    local hash = SECRET_SALT
-    for i = 1, #raw do
-        hash = (hash * 131 + string.byte(raw, i)) % 89999999
-    end
-    return tostring(10000000 + hash)
-end
+    .key-box {
+      background: #0d1424;
+      border: 1px dashed #475569;
+      border-radius: 10px;
+      padding: 15px 12px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #4ade80;
+      margin-bottom: 14px;
+      word-break: break-all;
+    }
 
-local function isValidKey(inputText)
-    if not LocalPlayer then
-        return false
-    end
-    local cleaned = tostring(inputText or ""):gsub("%D", "")
-    if cleaned == "" then
-        return false
-    end
-    local uid = LocalPlayer.UserId
-    local nowCycle = getCurrentCycle()
-    for offset = -1, 30 do
-        if cleaned == buildUserKey(uid, nowCycle + offset) then
-            return true
-        end
-    end
-    return false
-end
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
 
-local function getTargets()
-    local list = {}
-    if LocalPlayer then
-        local pg = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
-        if pg then
-            table.insert(list, pg)
-        end
-    end
-    pcall(function()
-        local cg = game:GetService("CoreGui")
-        if cg then
-            table.insert(list, cg)
-        end
-    end)
-    if StarterGui then
-        table.insert(list, StarterGui)
-    end
-    return list
-end
+    .btn-get {
+      background: #2f6df6;
+      color: #ffffff;
+    }
 
-local targets = getTargets()
-local isOwner = isOwnerAccount(LocalPlayer)
+    .btn-renew {
+      background: #e08a00;
+      color: #ffffff;
+    }
 
--- Bảng màu theo vai trò: Chủ Hub = Vàng, Người thường = Xanh
-local THEME = isOwner and {
-    windowBg = Color3.fromRGB(26, 20, 8),
-    stroke = Color3.fromRGB(255, 200, 0),
-    titleText = Color3.fromRGB(255, 215, 0),
-    btnBg = Color3.fromRGB(217, 155, 0),
-    btnText = Color3.fromRGB(20, 15, 5),
-    cardBg = Color3.fromRGB(38, 30, 12),
-    minBtnBg = Color3.fromRGB(48, 38, 14),
-    badgeText = Color3.fromRGB(255, 225, 70),
-} or {
-    windowBg = Color3.fromRGB(10, 14, 22),
-    stroke = Color3.fromRGB(0, 150, 255),
-    titleText = Color3.fromRGB(0, 190, 255),
-    btnBg = Color3.fromRGB(0, 130, 240),
-    btnText = Color3.fromRGB(255, 255, 255),
-    cardBg = Color3.fromRGB(16, 22, 35),
-    minBtnBg = Color3.fromRGB(20, 30, 48),
-    badgeText = Color3.fromRGB(120, 205, 255),
-}
+    .btn-renew:disabled {
+      background: #475569;
+      color: #cbd5e1;
+      cursor: not-allowed;
+    }
 
-local templateGui = Instance.new("ScreenGui")
-templateGui.Name = "ServerHubTemplate"
-templateGui.ResetOnSpawn = false
-templateGui.IgnoreGuiInset = true
-templateGui.DisplayOrder = 999999
+    .btn-copy {
+      background: #1ea853;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
 
--- ==================== MENU CHÍNH ====================
-local mainWin = Instance.new("Frame")
-mainWin.Name = "MainHubWindow"
-mainWin.Size = UDim2.new(0, 300, 0, 350)
-mainWin.Position = UDim2.new(0.05, 0, 0.16, 0)
-mainWin.BackgroundColor3 = THEME.windowBg
-mainWin.BorderSizePixel = 0
-mainWin.Active = true
-mainWin.Draggable = true
-mainWin.Visible = isOwner
-mainWin.Parent = templateGui
+    .msg {
+      font-size: 12px;
+      color: #94a3b8;
+      min-height: 18px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>AK HUB // KEY SYSTEM</h1>
+    <p>UserId Key • 5h Cycle • Starts on Get Key</p>
 
-local mwCorner = Instance.new("UICorner")
-mwCorner.CornerRadius = UDim.new(0, 12)
-mwCorner.Parent = mainWin
+    <input id="uidInput" type="text" placeholder="Enter Roblox UserId (e.g. 123456789)" />
 
-local mwStroke = Instance.new("UIStroke")
-mwStroke.Color = THEME.stroke
-mwStroke.Thickness = 2
-mwStroke.Parent = mainWin
+    <div class="info-bar">
+      <div>Cycle: <strong id="cycleLabel">None</strong></div>
+      <div>Time Left: <strong id="keyCountdown">--:--:--</strong></div>
+    </div>
 
-local titleLab = Instance.new("TextLabel")
-titleLab.Name = "TitleLabel"
-titleLab.Size = UDim2.new(1, -45, 0, 38)
-titleLab.Position = UDim2.new(0, 12, 0, 0)
-titleLab.BackgroundTransparency = 1
-titleLab.Text = isOwner and "👑 AK HUB [OWNER VN] - by tân" or "✨ AK HUB - by tân ✨"
-titleLab.TextColor3 = THEME.titleText
-titleLab.TextSize = 12
-titleLab.Font = Enum.Font.GothamBold
-titleLab.TextXAlignment = Enum.TextXAlignment.Left
-titleLab.Parent = mainWin
+    <div id="keyOut" class="key-box">----------</div>
 
-local minBtn = Instance.new("TextButton")
-minBtn.Name = "MinButton"
-minBtn.Size = UDim2.new(0, 28, 0, 28)
-minBtn.Position = UDim2.new(1, -34, 0, 5)
-minBtn.BackgroundColor3 = THEME.minBtnBg
-minBtn.Text = "-"
-minBtn.TextColor3 = THEME.titleText
-minBtn.TextSize = 16
-minBtn.Font = Enum.Font.GothamBold
-minBtn.Parent = mainWin
+    <button class="btn-get" onclick="getKeyNow()">Get Key</button>
+    <button id="renewBtn" class="btn-renew" onclick="renewKey30s()">Renew (30s)</button>
+    <button class="btn-copy" onclick="copyKey()">Copy Key</button>
 
-local bodyF = Instance.new("Frame")
-bodyF.Name = "BodyFrame"
-bodyF.Size = UDim2.new(1, 0, 1, -38)
-bodyF.Position = UDim2.new(0, 0, 0, 38)
-bodyF.BackgroundTransparency = 1
-bodyF.Parent = mainWin
+    <div id="msg" class="msg"></div>
+  </div>
 
-local accName = LocalPlayer and (LocalPlayer.DisplayName .. " (@" .. LocalPlayer.Name .. ")") or "Unknown"
-local usrBox = Instance.new("TextLabel")
-usrBox.Name = "UserBox"
-usrBox.Size = UDim2.new(0.92, 0, 0, 26)
-usrBox.Position = UDim2.new(0.04, 0, 0.02, 0)
-usrBox.BackgroundColor3 = THEME.cardBg
-usrBox.BorderSizePixel = 0
-usrBox.Text = isOwner and ("  👑 OWNER VN: " .. accName) or ("  👤 Acc: " .. accName)
-usrBox.TextColor3 = THEME.badgeText
-usrBox.TextSize = 11
-usrBox.Font = Enum.Font.GothamSemibold
-usrBox.TextXAlignment = Enum.TextXAlignment.Left
-usrBox.Parent = bodyF
+  <script>
+    const SECRET_SALT = 7919;
+    const KEY_TTL_MS = 5 * 60 * 60 * 1000;
+    const CYCLE_BUCKET_MS = 5 * 60 * 60 * 1000;
+    const RENEW_WAIT_SEC = 30;
+    const OWNER_ACCOUNTS = ["hupbera23", "hupbera5"];
 
-local devType = (UserInputService.KeyboardEnabled and UserInputService.MouseEnabled) and "PC" or "Mobile"
-local devBox = Instance.new("TextLabel")
-devBox.Name = "DeviceBox"
-devBox.Size = UDim2.new(0.92, 0, 0, 26)
-devBox.Position = UDim2.new(0.04, 0, 0.11, 0)
-devBox.BackgroundColor3 = THEME.cardBg
-devBox.BorderSizePixel = 0
-devBox.Text = "  🎮 Device: " .. devType
-devBox.TextColor3 = isOwner and Color3.fromRGB(255, 220, 90) or Color3.fromRGB(0, 255, 150)
-devBox.TextSize = 11
-devBox.Font = Enum.Font.GothamSemibold
-devBox.TextXAlignment = Enum.TextXAlignment.Left
-devBox.Parent = bodyF
+    let hasTakenKey = false;
+    let isOwnerMode = false;
+    let expireAtMs = 0;
+    let currentCycleIdx = null;
+    let renewInterval = null;
 
-local scanBtn = Instance.new("TextButton")
-scanBtn.Name = "ScanButton"
-scanBtn.Size = UDim2.new(0.92, 0, 0, 38)
-scanBtn.Position = UDim2.new(0.04, 0, 0.24, 0)
-scanBtn.BackgroundColor3 = THEME.btnBg
-scanBtn.Text = "Find a server for one person."
-scanBtn.TextColor3 = THEME.btnText
-scanBtn.TextSize = 12
-scanBtn.Font = Enum.Font.GothamBold
-scanBtn.Parent = bodyF
+    function getRawInput() {
+      return document.getElementById("uidInput").value.trim();
+    }
 
-local scrollArea = Instance.new("ScrollingFrame")
-scrollArea.Name = "ServerList"
-scrollArea.Size = UDim2.new(0.92, 0, 0, 185)
-scrollArea.Position = UDim2.new(0.04, 0, 0.40, 0)
-scrollArea.BackgroundColor3 = Color3.fromRGB(6, 9, 15)
-scrollArea.BorderSizePixel = 0
-scrollArea.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollArea.ScrollBarThickness = 4
-scrollArea.Parent = bodyF
+    function getCleanUid() {
+      return getRawInput().replace(/\D/g, "");
+    }
 
-local uiList = Instance.new("UIListLayout")
-uiList.SortOrder = Enum.SortOrder.LayoutOrder
-uiList.Padding = UDim.new(0, 6)
-uiList.Parent = scrollArea
+    function isOwnerInput(raw) {
+      return OWNER_ACCOUNTS.includes(String(raw || "").toLowerCase());
+    }
 
--- ==================== KHUNG NHẬP KEY (MÀU XANH CHO NGƯỜI THƯỜNG) ====================
-local keyWin = Instance.new("Frame")
-keyWin.Name = "KeyWindow"
-keyWin.Size = UDim2.new(0, 286, 0, 195)
-keyWin.Position = UDim2.new(0.5, -143, 0.5, -97)
-keyWin.BackgroundColor3 = Color3.fromRGB(10, 16, 28)
-keyWin.BorderSizePixel = 0
-keyWin.Active = true
-keyWin.Draggable = true
-keyWin.Visible = not isOwner
-keyWin.Parent = templateGui
+    function getCycleFromTimestamp(ms) {
+      return Math.floor(ms / CYCLE_BUCKET_MS);
+    }
 
-local kwCorner = Instance.new("UICorner")
-kwCorner.CornerRadius = UDim.new(0, 12)
-kwCorner.Parent = keyWin
+    function calcKey(uid, cycleIdx) {
+      let hash = SECRET_SALT;
+      const mix = `${uid}_${cycleIdx}`;
+      for (let i = 0; i < mix.length; i++) {
+        hash = (hash * 131 + mix.charCodeAt(i)) % 89999999;
+      }
+      return String(10000000 + hash);
+    }
 
-local kwStroke = Instance.new("UIStroke")
-kwStroke.Color = Color3.fromRGB(0, 150, 255)
-kwStroke.Thickness = 2
-kwStroke.Parent = keyWin
+    function formatHMS(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, "0");
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
+      const s = String(totalSec % 60).padStart(2, "0");
+      return `${h}:${m}:${s}`;
+    }
 
-local kTitle = Instance.new("TextLabel")
-kTitle.Name = "KeyTitle"
-kTitle.Size = UDim2.new(1, -20, 0, 28)
-kTitle.Position = UDim2.new(0, 10, 0, 8)
-kTitle.BackgroundTransparency = 1
-kTitle.Text = "🔐 AK HUB // KEY SYSTEM"
-kTitle.TextColor3 = Color3.fromRGB(0, 190, 255)
-kTitle.TextSize = 13
-kTitle.Font = Enum.Font.GothamBold
-kTitle.Parent = keyWin
+    function resetKeyState() {
+      hasTakenKey = false;
+      isOwnerMode = false;
+      expireAtMs = 0;
+      currentCycleIdx = null;
+      document.getElementById("cycleLabel").textContent = "None";
+      document.getElementById("keyOut").textContent = "----------";
+      document.getElementById("keyCountdown").textContent = "--:--:--";
+    }
 
-local kUidHint = Instance.new("TextLabel")
-kUidHint.Name = "UidHint"
-kUidHint.Size = UDim2.new(1, -20, 0, 18)
-kUidHint.Position = UDim2.new(0, 10, 0, 34)
-kUidHint.BackgroundTransparency = 1
-kUidHint.Text = "UserId: " .. tostring(LocalPlayer and LocalPlayer.UserId or "Unknown")
-kUidHint.TextColor3 = Color3.fromRGB(120, 205, 255)
-kUidHint.TextSize = 11
-kUidHint.Font = Enum.Font.GothamSemibold
-kUidHint.Parent = keyWin
+    function applyOwnerState(raw) {
+      hasTakenKey = false;
+      isOwnerMode = true;
+      expireAtMs = 0;
+      currentCycleIdx = "OWNER";
+      document.getElementById("cycleLabel").textContent = "OWNER VN";
+      document.getElementById("keyCountdown").textContent = "UNLIMITED";
+      document.getElementById("keyOut").textContent = "OWNER-UNLIMITED";
+      document.getElementById("msg").textContent = `OWNER VN (${raw}) - Unlimited access in-game.`;
+    }
 
-local keyBox = Instance.new("TextBox")
-keyBox.Name = "KeyInput"
-keyBox.Size = UDim2.new(0.88, 0, 0, 36)
-keyBox.Position = UDim2.new(0.06, 0, 0.31, 0)
-keyBox.BackgroundColor3 = Color3.fromRGB(18, 28, 46)
-keyBox.BorderSizePixel = 0
-keyBox.Text = ""
-keyBox.PlaceholderText = "Paste key from website..."
-keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyBox.PlaceholderColor3 = Color3.fromRGB(130, 150, 180)
-keyBox.TextSize = 12
-keyBox.Font = Enum.Font.GothamSemibold
-keyBox.ClearTextOnFocus = false
-keyBox.Parent = keyWin
+    function getKeyNow() {
+      const raw = getRawInput();
+      if (!raw) {
+        document.getElementById("msg").textContent = "Enter Roblox UserId first.";
+        return;
+      }
 
-local checkBtn = Instance.new("TextButton")
-checkBtn.Name = "ConfirmKeyBtn"
-checkBtn.Size = UDim2.new(0.42, 0, 0, 36)
-checkBtn.Position = UDim2.new(0.06, 0, 0.56, 0)
-checkBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 240)
-checkBtn.Text = "Verify"
-checkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-checkBtn.TextSize = 12
-checkBtn.Font = Enum.Font.GothamBold
-checkBtn.Parent = keyWin
+      if (isOwnerInput(raw)) {
+        applyOwnerState(raw);
+        return;
+      }
 
-local getKeyBtn = Instance.new("TextButton")
-getKeyBtn.Name = "GetKeyBtn"
-getKeyBtn.Size = UDim2.new(0.42, 0, 0, 36)
-getKeyBtn.Position = UDim2.new(0.52, 0, 0.56, 0)
-getKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 95, 195)
-getKeyBtn.Text = "Get Key"
-getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-getKeyBtn.TextSize = 12
-getKeyBtn.Font = Enum.Font.GothamBold
-getKeyBtn.Parent = keyWin
+      const uid = getCleanUid();
+      if (!uid) {
+        document.getElementById("msg").textContent = "UserId must be numbers only (e.g. 123456789).";
+        return;
+      }
 
-local kStatus = Instance.new("TextLabel")
-kStatus.Name = "KeyStatus"
-kStatus.Size = UDim2.new(0.92, 0, 0, 26)
-kStatus.Position = UDim2.new(0.04, 0, 0.79, 0)
-kStatus.BackgroundTransparency = 1
-kStatus.Text = "Click Get Key to copy link"
-kStatus.TextColor3 = Color3.fromRGB(160, 180, 210)
-kStatus.TextSize = 10
-kStatus.Font = Enum.Font.Gotham
-kStatus.TextWrapped = true
-kStatus.Parent = keyWin
+      isOwnerMode = false;
+      const now = Date.now();
+      currentCycleIdx = getCycleFromTimestamp(now);
+      expireAtMs = now + KEY_TTL_MS;
+      hasTakenKey = true;
 
-local function bindGui(rootGui)
-    local mw = rootGui:FindFirstChild("MainHubWindow")
-    local kw = rootGui:FindFirstChild("KeyWindow")
-    if not mw then return end
+      const key = calcKey(uid, currentCycleIdx);
+      document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
+      document.getElementById("keyOut").textContent = key;
+      document.getElementById("keyCountdown").textContent = formatHMS(expireAtMs - Date.now());
+      document.getElementById("msg").textContent = "Key generated. Valid for 5 hours.";
+    }
 
-    local bf = mw:FindFirstChild("BodyFrame")
-    local mb = mw:FindFirstChild("MinButton")
-    if mb and bf then
-        local minimized = false
-        mb.MouseButton1Click:Connect(function()
-            minimized = not minimized
-            bf.Visible = not minimized
-            mw.Size = minimized and UDim2.new(0, 300, 0, 38) or UDim2.new(0, 300, 0, 350)
-            mb.Text = minimized and "+" or "-"
-        end)
-    end
+    function renewKey30s() {
+      const raw = getRawInput();
+      if (!raw) {
+        document.getElementById("msg").textContent = "Enter UserId before renewing.";
+        return;
+      }
 
-    if bf then
-        local sBtn = bf:FindFirstChild("ScanButton")
-        local scArea = bf:FindFirstChild("ServerList")
-        if sBtn and scArea then
-            sBtn.MouseButton1Click:Connect(function()
-                for _, c in ipairs(scArea:GetChildren()) do
-                    if c:IsA("Frame") then c:Destroy() end
-                end
-                sBtn.Text = "Scanning..."
-                local okReq, raw = pcall(function()
-                    return game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
-                end)
-                if okReq and type(raw) == "string" then
-                    local okDec, data = pcall(function()
-                        return HttpService:JSONDecode(raw)
-                    end)
-                    if okDec and type(data) == "table" and type(data.data) == "table" then
-                        for _, srv in ipairs(data.data) do
-                            local playing = srv.playing or 0
-                            local maxP = srv.maxPlayers or 0
-                            if playing >= 1 and playing <= 5 and srv.id ~= game.JobId then
-                                local card = Instance.new("Frame")
-                                card.Size = UDim2.new(1, -6, 0, 35)
-                                card.BackgroundColor3 = THEME.cardBg
-                                card.BorderSizePixel = 0
-                                card.Parent = scArea
+      if (isOwnerInput(raw) || isOwnerMode) {
+        applyOwnerState(raw);
+        return;
+      }
 
-                                local lbl = Instance.new("TextLabel")
-                                lbl.Size = UDim2.new(0.68, -8, 1, 0)
-                                lbl.Position = UDim2.new(0, 8, 0, 0)
-                                lbl.BackgroundTransparency = 1
-                                lbl.Text = "👥 " .. playing .. "/" .. maxP .. " | " .. tostring(srv.id):sub(1, 8)
-                                lbl.TextColor3 = Color3.fromRGB(235, 240, 250)
-                                lbl.TextSize = 10
-                                lbl.Font = Enum.Font.GothamSemibold
-                                lbl.TextXAlignment = Enum.TextXAlignment.Left
-                                lbl.Parent = card
+      const uid = getCleanUid();
+      if (!uid) {
+        document.getElementById("msg").textContent = "Invalid UserId.";
+        return;
+      }
 
-                                local jBtn = Instance.new("TextButton")
-                                jBtn.Size = UDim2.new(0.28, 0, 0.72, 0)
-                                jBtn.Position = UDim2.new(0.70, 0, 0.14, 0)
-                                jBtn.BackgroundColor3 = THEME.btnBg
-                                jBtn.Text = "Join"
-                                jBtn.TextColor3 = THEME.btnText
-                                jBtn.TextSize = 10
-                                jBtn.Font = Enum.Font.GothamBold
-                                jBtn.Parent = card
+      if (!hasTakenKey || !expireAtMs) {
+        document.getElementById("msg").textContent = "Click Get Key before renewing.";
+        return;
+      }
 
-                                jBtn.MouseButton1Click:Connect(function()
-                                    pcall(function()
-                                        TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id, LocalPlayer)
-                                    end)
-                                end)
-                            end
-                        end
-                        local listLay = scArea:FindFirstChildOfClass("UIListLayout")
-                        if listLay then
-                            scArea.CanvasSize = UDim2.new(0, 0, 0, listLay.AbsoluteContentSize.Y + 10)
-                        end
-                    end
-                end
-                sBtn.Text = "Find a server for one person."
-            end)
-        end
-    end
+      if (renewInterval) return;
 
-    if kw then
-        local kInp = kw:FindFirstChild("KeyInput")
-        local cBtn = kw:FindFirstChild("ConfirmKeyBtn")
-        local gBtn = kw:FindFirstChild("GetKeyBtn")
-        local stLbl = kw:FindFirstChild("KeyStatus")
+      let secLeft = RENEW_WAIT_SEC;
+      const btn = document.getElementById("renewBtn");
+      btn.disabled = true;
+      btn.textContent = `Renewing: ${secLeft}s...`;
+      document.getElementById("msg").textContent = `Waiting ${RENEW_WAIT_SEC}s to add 5 hours...`;
 
-        if gBtn and stLbl then
-            gBtn.MouseButton1Click:Connect(function()
-                if type(setclipboard) == "function" then
-                    pcall(setclipboard, KEY_LINK)
-                    stLbl.Text = "Link copied! Paste in browser."
-                else
-                    stLbl.Text = KEY_LINK
-                end
-            end)
-        end
+      renewInterval = setInterval(() => {
+        secLeft--;
+        if (secLeft > 0) {
+          btn.textContent = `Renewing: ${secLeft}s...`;
+        } else {
+          clearInterval(renewInterval);
+          renewInterval = null;
+          btn.disabled = false;
+          btn.textContent = `Renew (${RENEW_WAIT_SEC}s)`;
 
-        if cBtn and kInp and stLbl then
-            cBtn.MouseButton1Click:Connect(function()
-                if isValidKey(kInp.Text) then
-                    kw.Visible = false
-                    mw.Visible = true
-                else
-                    stLbl.Text = "Invalid key or wrong UserId!"
-                end
-            end)
-        end
-    end
-end
+          const baseTime = Math.max(Date.now(), expireAtMs);
+          currentCycleIdx = currentCycleIdx + 1;
+          expireAtMs = baseTime + KEY_TTL_MS;
+          hasTakenKey = true;
 
-for _, parentTarget in ipairs(targets) do
-    pcall(function()
-        local cloneGui = templateGui:Clone()
-        cloneGui.Name = "ServerPickerHub_" .. tostring(parentTarget.Name)
-        cloneGui.Enabled = true
-        cloneGui.ResetOnSpawn = false
-        cloneGui.IgnoreGuiInset = true
-        cloneGui.DisplayOrder = 999999
-        cloneGui.Parent = parentTarget
-        bindGui(cloneGui)
-    end)
-end
+          const newKey = calcKey(uid, currentCycleIdx);
+          document.getElementById("cycleLabel").textContent = "#" + currentCycleIdx;
+          document.getElementById("keyOut").textContent = newKey;
+          document.getElementById("msg").textContent = "Renewed! Added 5 hours.";
+        }
+      }, 1000);
+    }
 
-templateGui:Destroy()
-                              
+    function copyKey() {
+      const k = document.getElementById("keyOut").textContent;
+      if (!hasTakenKey || !k || k === "----------" || k === "OWNER-UNLIMITED") {
+        document.getElementById("msg").textContent = "Get a UserId key first.";
+        return;
+      }
+
+      navigator.clipboard.writeText(k).then(() => {
+        document.getElementById("msg").textContent = "Key copied.";
+      }).catch(() => {
+        document.getElementById("msg").textContent = "Long-press the key to copy.";
+      });
+    }
+
+    document.getElementById("uidInput").addEventListener("input", () => {
+      const raw = getRawInput();
+      if (isOwnerInput(raw)) {
+        applyOwnerState(raw);
+        return;
+      }
+      resetKeyState();
+      document.getElementById("msg").textContent = "Click Get Key to start timer.";
+    });
+
+    setInterval(() => {
+      const el = document.getElementById("keyCountdown");
+      if (isOwnerMode) {
+        el.textContent = "UNLIMITED";
+        return;
+      }
+      if (!hasTakenKey || !expireAtMs) {
+        el.textContent = "--:--:--";
+        return;
+      }
+      const left = expireAtMs - Date.now();
+      if (left > 0) {
+        el.textContent = formatHMS(left);
+      } else {
+        el.textContent = "00:00:00";
+        document.getElementById("msg").textContent = "Key expired. Click Get Key or Renew.";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
